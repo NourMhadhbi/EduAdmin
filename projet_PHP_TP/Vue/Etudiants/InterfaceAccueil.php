@@ -499,18 +499,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
 
 
     <!-- Pied de page -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <p>&copy; 2023 Système de Présence Intelligente. Tous droits réservés.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <p>Développement web dynamique - Projet académique</p>
-                </div>
-            </div>
-        </div>
-    </footer>
+   <?php include("../../Footer/footer.php") ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- <script>

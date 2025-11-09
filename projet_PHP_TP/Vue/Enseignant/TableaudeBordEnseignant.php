@@ -165,7 +165,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             }
         }
     </style> -->
-        <style>
+    <style>
         :root {
             --primary-color: #3498db;
             --secondary-color: #2c3e50;
@@ -321,8 +321,15 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
         }
 
         @keyframes modalFadeIn {
-            from {opacity: 0; transform: translateY(-50px);}
-            to {opacity: 1; transform: translateY(0);}
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .modal-header {
@@ -399,7 +406,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             .sidebar {
                 min-height: auto;
             }
-            
+
             .modal-content {
                 margin: 10% auto;
                 width: 95%;
@@ -410,17 +417,17 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
 
 <body>
     <!-- Navigation principale -->
-      <?php include("../NavBar/navbar.php") ?>
+    <?php include("../NavBar/navbar.php") ?>
 
     <div class="container-fluid">
         <div class="row">
-         
+
 
             <!-- Contenu principal -->
-           <main class="px-md-4 py-4">
+            <main class="px-md-4 py-4">
                 <!-- En-tête de page -->
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center page-header">
-                    <h1 class="h2">Tableau de bord</h1> <?php echo "iddd".$_SESSION['id'] ?>
+                    <h1 class="h2">Tableau de bord</h1> <?php echo "iddd" . $_SESSION['id'] ?>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group me-2">
                             <button type="button" class="btn btn-sm btn-outline-secondary">
@@ -657,54 +664,54 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                 </div>
             </main>
         </div>
-            <!-- Modal pour Ajouter un Cours -->
-    <div class="modal" id="addCourseModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Ajouter un Nouveau Cours</h3>
-                <button class="modal-close" data-modal="addCourseModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addCourseForm" action="../../Controller/EnseignantController.php" method="POST">
-                    <input type="hidden" name="action" value="ajouterCours">
+        <!-- Modal pour Ajouter un Cours -->
+        <div class="modal" id="addCourseModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Ajouter un Nouveau Cours</h3>
+                    <button class="modal-close" data-modal="addCourseModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCourseForm" action="../../Controller/EnseignantController.php" method="POST">
+                        <input type="hidden" name="action" value="ajouterCours">
 
-                    <div class="form-group">
-                        <label class="form-label" for="courseTitle">Titre du Cours</label>
-                        <input type="text" class="form-control" id="courseTitle" name="titre"
-                            placeholder="Ex: Algorithmique Avancée" required>
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label" for="courseTitle">Titre du Cours</label>
+                            <input type="text" class="form-control" id="courseTitle" name="titre"
+                                placeholder="Ex: Algorithmique Avancée" required>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="courseTeacher">Enseignant</label>
-                        <select class="form-control" id="courseTeacher" name="enseignant_id" required>
-                            <option value="">Sélectionner un enseignant</option>
-                            <!-- Les options des enseignants seront chargées dynamiquement -->
-                            <option value="<?php echo $_SESSION['id'] ?? ''; ?>" selected>
-                                <?php echo $prenom . ' ' . $nom; ?>
-                            </option>
-                        </select>
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label" for="courseTeacher">Enseignant</label>
+                            <select class="form-control" id="courseTeacher" name="enseignant_id" required>
+                                <option value="">Sélectionner un enseignant</option>
+                                <!-- Les options des enseignants seront chargées dynamiquement -->
+                                <option value="<?php echo $_SESSION['id'] ?? ''; ?>" selected>
+                                    <?php echo $prenom . ' ' . $nom; ?>
+                                </option>
+                            </select>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="courseDescription">Description du Cours</label>
-                        <textarea class="form-control" id="courseDescription" name="description" rows="3"
-                            placeholder="Description du cours..."></textarea>
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label" for="courseDescription">Description du Cours</label>
+                            <textarea class="form-control" id="courseDescription" name="description" rows="3"
+                                placeholder="Description du cours..."></textarea>
+                        </div>
 
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-modal="addCourseModal">Annuler</button>
-                        <button type="submit" class="btn btn-primary" id="saveCourseBtn">Enregistrer le Cours</button>
-                    </div>
-                </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-modal="addCourseModal">Annuler</button>
+                            <button type="submit" class="btn btn-primary" id="saveCourseBtn">Enregistrer le Cours</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-    </div>
-
+    <?php include("../../Footer/footer.php") ?>
     <!-- Bootstrap & Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- <script>
         // Initialisation du graphique de présence
         document.addEventListener('DOMContentLoaded', function () {
@@ -753,9 +760,9 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             });
         });
     </script> -->
-      <script>
+    <script>
         // Initialisation du graphique de présence
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('attendanceChart').getContext('2d');
             const attendanceChart = new Chart(ctx, {
                 type: 'bar',
@@ -791,7 +798,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                             beginAtZero: true,
                             max: 100,
                             ticks: {
-                                callback: function (value) {
+                                callback: function(value) {
                                     return value + '%';
                                 }
                             }
@@ -831,53 +838,55 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
 
             // Gérer la soumission du formulaire
             //document.getElementById('addCourseForm').addEventListener('submit', function(e) {
-               // e.preventDefault();
-                
-                // Ici, vous pouvez ajouter votre logique pour sauvegarder le cours
-                // Par exemple, envoyer les données via AJAX
-                
-                // Pour l'instant, on simule juste un enregistrement
-                //const courseTitle = document.getElementById('courseTitle').value;
-                //alert(`Cours "${courseTitle}" créé avec succès!`);
-                
-                // Fermer le modal
-                //modal.style.display = 'none';
-                //document.body.style.overflow = 'auto';
-                
-                // Réinitialiser le formulaire
-                //this.reset();
-           // });
+            // e.preventDefault();
+
+            // Ici, vous pouvez ajouter votre logique pour sauvegarder le cours
+            // Par exemple, envoyer les données via AJAX
+
+            // Pour l'instant, on simule juste un enregistrement
+            //const courseTitle = document.getElementById('courseTitle').value;
+            //alert(`Cours "${courseTitle}" créé avec succès!`);
+
+            // Fermer le modal
+            //modal.style.display = 'none';
+            //document.body.style.overflow = 'auto';
+
+            // Réinitialiser le formulaire
+            //this.reset();
+            // });
             document.getElementById('saveCourseBtn').addEventListener('click', function() {
-            const courseCode = document.getElementById('courseCode').value;
-            const courseName = document.getElementById('courseName').value;
-            if (courseCode && courseName) {
-                alert(`Cours "${courseCode} - ${courseName}" ajouté avec succès!`);
-                closeModal('addCourseModal');
-                // Ici, vous pouvez ajouter le code pour sauvegarder le cours
-            } else {
-                alert('Veuillez remplir tous les champs obligatoires');
-            }
-        });
+                const courseCode = document.getElementById('courseCode').value;
+                const courseName = document.getElementById('courseName').value;
+                if (courseCode && courseName) {
+                    alert(`Cours "${courseCode} - ${courseName}" ajouté avec succès!`);
+                    closeModal('addCourseModal');
+                    // Ici, vous pouvez ajouter le code pour sauvegarder le cours
+                } else {
+                    alert('Veuillez remplir tous les champs obligatoires');
+                }
+            });
         });
         document.addEventListener('DOMContentLoaded', () => {
-    <?php if (isset($_SESSION["success"])): ?>
-        Swal.fire({
-            icon: 'success',
-            title: 'Succès',
-            text: '<?= addslashes($_SESSION["success"]) ?>',
-            showConfirmButton: false,
-            timer: 2000
-        });
-    <?php unset($_SESSION["success"]); endif; ?>
+            <?php if (isset($_SESSION["success"])): ?>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Succès',
+                    text: '<?= addslashes($_SESSION["success"]) ?>',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            <?php unset($_SESSION["success"]);
+            endif; ?>
 
-    <?php if (isset($_SESSION["error"])): ?>
-        Swal.fire({
-            icon: 'error',
-            title: 'Erreur',
-            text: '<?= addslashes($_SESSION["error"]) ?>'
+            <?php if (isset($_SESSION["error"])): ?>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: '<?= addslashes($_SESSION["error"]) ?>'
+                });
+            <?php unset($_SESSION["error"]);
+            endif; ?>
         });
-    <?php unset($_SESSION["error"]); endif; ?>
-});
     </script>
 </body>
 

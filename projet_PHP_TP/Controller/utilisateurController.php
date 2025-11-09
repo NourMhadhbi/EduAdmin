@@ -31,7 +31,7 @@ class UtilisateurController
                 exit;
             }
 
-            $uploadDir = __DIR__ . "/../Assets/Images/";
+            $uploadDir = __DIR__ . "/../Assets/Images/known";
             if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
 
             switch (strtolower($role)) {
@@ -52,7 +52,7 @@ class UtilisateurController
             // Upload photo si présente
             if (isset($_FILES["photoProfil"]) && $_FILES["photoProfil"]["error"] === UPLOAD_ERR_OK) {
                 // $fileName = uniqid() . "_" . basename($_FILES["photoProfil"]["name"]);
-                  $fileName = basename($_FILES["photoProfil"]["name"]);
+                $fileName = basename($_FILES["photoProfil"]["name"]);
                 $targetPath = $uploadDir . $fileName;
                 if (move_uploaded_file($_FILES["photoProfil"]["tmp_name"], $targetPath)) {
                     $photoProfil = $fileName;

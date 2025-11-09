@@ -1018,7 +1018,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             </div>
         </div>
     </div>
-
+   <?php include("../../Footer/footer.php") ?>
     <script>
         // Tab functionality
         document.querySelectorAll('.tab').forEach(tab => {

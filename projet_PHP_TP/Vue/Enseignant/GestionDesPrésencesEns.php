@@ -228,7 +228,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             </div>
         </div>
     </main>
-
+   <?php include("../../Footer/footer.php") ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Script pour changer le statut de présence au clic

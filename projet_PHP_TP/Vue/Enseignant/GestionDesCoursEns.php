@@ -441,7 +441,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
         <div class="row">
 
 
-      <main class="px-md-4 py-4">
+            <main class="px-md-4 py-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center page-header">
                     <h1 class="h2 fw-bold text-dark">Gestion des cours</h1>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal"
@@ -1301,7 +1301,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             </div>
         </div>
     </div>
-
+    <?php include("../../Footer/footer.php") ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Gestion de l'affichage du champ lieu en fonction du type de séance

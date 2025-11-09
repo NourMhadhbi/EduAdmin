@@ -1,0 +1,87 @@
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f653fa1ec7.jpg"
+Output: 25-11-08 16:44:14 - Directory C:\Users\pc\.deepface has been created
+25-11-08 16:44:14 - Directory C:\Users\pc\.deepface\weights has been created
+25-11-08 16:44:14 - Found 5 newly added image(s), 0 removed image(s), 0 replaced image(s).
+{"status": "error", "msg": "\u26d3\ufe0f\u200d\ud83d\udca5 An exception occurred while downloading vgg_face_weights.h5 from https://github.com/serengil/deepface_models/releases/download/v1.0/vgg_face_weights.h5. Consider downloading it manually to C:\\Users\\pc\\.deepface\\weights\\vgg_face_weights.h5."}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f69712040d.jpg"
+Output: 25-11-08 17:01:57 - Found 5 newly added image(s), 0 removed image(s), 0 replaced image(s).
+{"status": "error", "msg": "\u26d3\ufe0f\u200d\ud83d\udca5 An exception occurred while downloading vgg_face_weights.h5 from https://github.com/serengil/deepface_models/releases/download/v1.0/vgg_face_weights.h5. Consider downloading it manually to C:\\Users\\pc\\.deepface\\weights\\vgg_face_weights.h5."}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6a3307204.jpg"
+Output: 25-11-08 17:05:11 - Found 5 newly added image(s), 0 removed image(s), 0 replaced image(s).
+25-11-08 17:05:17 - There are now 5 representations in ds_model_vggface_detector_opencv_aligned_normalization_base_expand_0.pkl
+25-11-08 17:05:18 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6a3307204.jpg in 5 length datastore
+25-11-08 17:05:18 - find function duration 6.61706280708313 seconds
+{"status": "found", "match": "690b652eb0210_nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6aaf8471c.jpg"
+Output: 25-11-08 17:07:16 - Found 1 newly added image(s), 4 removed image(s), 0 replaced image(s).
+25-11-08 17:07:19 - There are now 2 representations in ds_model_vggface_detector_opencv_aligned_normalization_base_expand_0.pkl
+25-11-08 17:07:19 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6aaf8471c.jpg in 2 length datastore
+25-11-08 17:07:20 - find function duration 4.214721441268921 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6d549cba2.jpg"
+Output: 25-11-08 17:18:33 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6d549cba2.jpg in 2 length datastore
+25-11-08 17:18:34 - find function duration 2.172318935394287 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6e3c02511.jpg"
+Output: 25-11-08 17:22:24 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6e3c02511.jpg in 2 length datastore
+25-11-08 17:22:25 - find function duration 2.0243911743164062 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6f368f265.jpg"
+Output: 25-11-08 17:26:34 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6f368f265.jpg in 2 length datastore
+25-11-08 17:26:36 - find function duration 2.063462018966675 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6f9dd0bf2.jpg"
+Output: 25-11-08 17:28:18 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f6f9dd0bf2.jpg in 2 length datastore
+25-11-08 17:28:19 - find function duration 2.0504157543182373 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f703f2100b.jpg"
+Output: 25-11-08 17:30:59 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f703f2100b.jpg in 2 length datastore
+25-11-08 17:31:00 - find function duration 2.050348997116089 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f747a5ab24.jpg"
+Output: 25-11-08 17:49:11 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f747a5ab24.jpg in 2 length datastore
+25-11-08 17:49:13 - find function duration 3.2848727703094482 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f76101aeaa.jpg" 2>&1
+Output: 2025-11-08 17:55:44.617283: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-08 17:55:46.171335: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-08 17:55:48.641019: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-08 17:55:48 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f76101aeaa.jpg in 2 length datastore
+25-11-08 17:55:49 - find function duration 2.2298495769500732 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f7bb71db18.jpg" 2>&1
+Output: 2025-11-08 18:19:51.832540: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-08 18:19:54.025302: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-08 18:19:56.869994: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-08 18:19:56 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../Assets/Images/probe/probe_690f7bb71db18.jpg in 2 length datastore
+25-11-08 18:19:58 - find function duration 2.350534200668335 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_690f80fc6baf3.jpg" 2>&1
+Output: 2025-11-08 18:42:21.141102: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-08 18:42:23.366147: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-08 18:42:26.142746: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-08 18:42:26 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_690f80fc6baf3.jpg in 2 length datastore
+25-11-08 18:42:27 - find function duration 2.3578827381134033 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+

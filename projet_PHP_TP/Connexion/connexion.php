@@ -1,5 +1,5 @@
 <?php
-
+date_default_timezone_set('Africa/Tunis');
 
 try {
     $conn = new PDO('mysql:host=localhost;dbname=dbonlearn', 'root', '');
@@ -9,4 +9,3 @@ try {
 } catch (PDOException $e) {
     die('Erreur : ' . $e->getMessage());
 }
-?>

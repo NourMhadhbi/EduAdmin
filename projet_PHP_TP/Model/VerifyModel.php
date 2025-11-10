@@ -1,23 +1,37 @@
 <?php
 class VerifyModel
 {
-    public function verifyFace($file)
+    public function verifyFace($file, $isFilePath = false)
     {
         // Dossier pour stocker l’image temporaire (uploadée)
 
         $uploadDir = __DIR__ . '/../../projet_PHP_TP/Assets/Images/probe/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-        if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
-            return json_encode(["status" => "error", "msg" => "Aucune image reçue."]);
-        }
+        // if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
+        //     return json_encode(["status" => "error", "msg" => "Aucune image reçue."]);
+        // }
 
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $filename = uniqid('probe_') . '.' . $ext;
-        $path = $uploadDir . $filename;
+        // $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        // $filename = uniqid('probe_') . '.' . $ext;
+        // $path = $uploadDir . $filename;
 
-        if (!move_uploaded_file($file['tmp_name'], $path)) {
-            return json_encode(["status" => "error", "msg" => "Erreur lors de l'upload."]);
+        // if (!move_uploaded_file($file['tmp_name'], $path)) {
+        //     return json_encode(["status" => "error", "msg" => "Erreur lors de l'upload."]);
+        // }
+        if ($isFilePath) {
+            $path = $file;
+        } else {
+            if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
+                return json_encode(["status" => "error", "msg" => "Aucune image reçue."]);
+            }
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = uniqid('probe_') . '.' . $ext;
+            $path = $uploadDir . $filename;
+
+            if (!move_uploaded_file($file['tmp_name'], $path)) {
+                return json_encode(["status" => "error", "msg" => "Erreur lors de l'upload."]);
+            }
         }
 
         // Chemin vers Python et script DeepFace

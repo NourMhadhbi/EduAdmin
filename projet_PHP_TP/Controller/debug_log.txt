@@ -85,3 +85,146 @@ To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512
 25-11-08 18:42:27 - find function duration 2.3578827381134033 seconds
 {"status": "found", "match": "nour.jpg", "distance": 0.059819}
 
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_69106a4004677.jpg" 2>&1
+Output: 2025-11-09 11:17:42.426640: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 11:17:53.528083: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 11:18:00.359290: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 11:17:59 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_69106a4004677.jpg in 2 length datastore
+25-11-09 11:18:03 - find function duration 4.83585786819458 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_6910769240999.jpg" 2>&1
+Output: 2025-11-09 12:10:10.958362: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 12:10:13.058498: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 12:10:15.869038: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 12:10:15 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_6910769240999.jpg in 2 length datastore
+25-11-09 12:10:16 - find function duration 2.3457770347595215 seconds
+{"status": "not_found"}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_6910775980bcf.jpg" 2>&1
+Output: 2025-11-09 12:13:30.223858: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 12:13:32.168082: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 12:13:34.816721: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 12:13:34 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_6910775980bcf.jpg in 2 length datastore
+25-11-09 12:13:35 - find function duration 2.202225923538208 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.528679}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_691077852369d.jpg" 2>&1
+Output: 2025-11-09 12:14:13.841668: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 12:14:15.934880: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 12:14:18.564595: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 12:14:18 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_691077852369d.jpg in 2 length datastore
+25-11-09 12:14:19 - find function duration 2.143599510192871 seconds
+{"status": "not_found"}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_69107797ad4cd.jpg" 2>&1
+Output: 2025-11-09 12:14:32.470322: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 12:14:34.629209: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 12:14:37.234483: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 12:14:37 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_69107797ad4cd.jpg in 2 length datastore
+25-11-09 12:14:38 - find function duration 2.1461713314056396 seconds
+{"status": "not_found"}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_691077aed5aa8.jpg" 2>&1
+Output: 2025-11-09 12:14:55.567549: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 12:14:57.584526: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 12:15:00.223882: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 12:15:00 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_691077aed5aa8.jpg in 2 length datastore
+25-11-09 12:15:01 - find function duration 2.1542444229125977 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.571791}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_691078122ea1b.jpg" 2>&1
+Output: 2025-11-09 12:16:34.894868: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 12:16:37.042531: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 12:16:39.696519: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 12:16:39 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_691078122ea1b.jpg in 2 length datastore
+25-11-09 12:16:40 - find function duration 2.2307651042938232 seconds
+{"status": "not_found"}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_691078638c544.jpg" 2>&1
+Output: 2025-11-09 12:17:56.288520: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 12:17:58.413121: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 12:18:01.207357: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 12:18:01 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_691078638c544.jpg in 2 length datastore
+25-11-09 12:18:02 - find function duration 2.24695086479187 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.656372}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_69107882428f9.jpg" 2>&1
+Output: 2025-11-09 12:18:26.963625: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 12:18:29.042915: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 12:18:31.812423: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 12:18:31 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Controller/../../projet_PHP_TP/Assets/Images/probe/probe_69107882428f9.jpg in 2 length datastore
+25-11-09 12:18:32 - find function duration 2.2203657627105713 seconds
+{"status": "not_found"}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_6910ae576d1eb.jpg" 2>&1
+Output: 2025-11-09 16:08:08.203693: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 16:08:10.525862: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 16:08:13.334789: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 16:08:13 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_6910ae576d1eb.jpg in 2 length datastore
+25-11-09 16:08:14 - find function duration 2.3853769302368164 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_6910af3c91aa4.jpg" 2>&1
+Output: 2025-11-09 16:11:57.336011: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 16:11:59.580211: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 16:12:02.344909: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 16:12:02 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_6910af3c91aa4.jpg in 2 length datastore
+25-11-09 16:12:03 - find function duration 2.1590473651885986 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_6910af82403ac.jpg" 2>&1
+Output: 2025-11-09 16:13:06.988934: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 16:13:09.139102: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 16:13:11.903895: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 16:13:11 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_6910af82403ac.jpg in 2 length datastore
+25-11-09 16:13:12 - find function duration 2.136000633239746 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+
+Commande: "C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/python/check_face.py" "C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_6910afc1c1db8.jpg" 2>&1
+Output: 2025-11-09 16:14:10.431318: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-09 16:14:12.640130: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\pc\AppData\Local\Programs\Python\Python313\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-11-09 16:14:15.373443: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+25-11-09 16:14:15 - Searching C:\laragon\www\projet_PHP_TP\projet_PHP_TP\Model/../../projet_PHP_TP/Assets/Images/probe/probe_6910afc1c1db8.jpg in 2 length datastore
+25-11-09 16:14:16 - find function duration 2.106464147567749 seconds
+{"status": "found", "match": "nour.jpg", "distance": 0.059819}
+

@@ -1,5 +1,9 @@
 <?php
 session_start();
+include("../../Model/seance.php");
+include("../../Model/presence.php");
+$snackbar = $_SESSION['snackbar'] ?? null;
+unset($_SESSION['snackbar']);
 if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
     header("Location: ../Authentification/connexion.php");
 
@@ -11,10 +15,40 @@ if (strtolower($_SESSION['role']) !== 'etudiant') {
     exit;
 }
 
+$idEtudiant = $_SESSION['id'] ?? '';
 $nom = $_SESSION['nom'] ?? '';
 $prenom = $_SESSION['prenom'] ?? '';
 $email = $_SESSION['email'];
 $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
+
+$seances = seance::findSeanceByEtudiant($_SESSION['id'], date('Y-m-d'));
+date_default_timezone_set('Africa/Tunis');
+$heureActuelle = date('H:i:s');
+
+// On cherche l'index de la séance en cours
+$indexEnCours = null;
+foreach ($seances as $index => $s) {
+    if ($s['heureDebut'] <= $heureActuelle && $s['heureFin'] >= $heureActuelle) {
+        $indexEnCours = $index;
+        break;
+    }
+}
+$seanceProchaine = null;
+
+if ($indexEnCours !== null) {
+    if (isset($seances[$indexEnCours + 1])) {
+        $seanceProchaine = $seances[$indexEnCours + 1];
+    }
+} else {
+    foreach ($seances as $s) {
+        if ($s['heureDebut'] > $heureActuelle) {
+            $seanceProchaine = $s;
+            break;
+        }
+    }
+}
+$stats = Presence::getStatsByEtudiant($idEtudiant);
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -339,34 +373,38 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                 </ul>
             </div>
 
-            <!-- Cartes de statistiques -->
+
+            <!-- Cartes de statistiques  -->
             <div class="stats-overview">
                 <div class="stat-card rate">
                     <div class="stat-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <div class="stat-number">85%</div>
+                    <div class="stat-number"><?= htmlspecialchars($stats['tauxPresence']) ?>%</div>
                     <div class="stat-label">Taux de présence</div>
                 </div>
+
                 <div class="stat-card present">
                     <div class="stat-icon">
                         <i class="fas fa-user-check"></i>
                     </div>
-                    <div class="stat-number">42</div>
+                    <div class="stat-number"><?= htmlspecialchars($stats['nbPresence']) ?></div>
                     <div class="stat-label">Présences</div>
                 </div>
+
                 <div class="stat-card absent">
                     <div class="stat-icon">
                         <i class="fas fa-user-times"></i>
                     </div>
-                    <div class="stat-number">8</div>
+                    <div class="stat-number"><?= htmlspecialchars($stats['nbAbsence']) ?></div>
                     <div class="stat-label">Absences</div>
                 </div>
+
                 <div class="stat-card courses">
                     <div class="stat-icon">
                         <i class="fas fa-book"></i>
                     </div>
-                    <div class="stat-number">12</div>
+                    <div class="stat-number"><?= htmlspecialchars($stats['totalCours']) ?></div>
                     <div class="stat-label">Cours suivis</div>
                 </div>
             </div>
@@ -391,27 +429,42 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>Développement Web Dynamique</td>
-                                            <td>09:00 - 11:00</td>
-                                            <td>Prof. Martin</td>
-                                            <td><span class="presence-status present"><i class="fas fa-check me-1"></i>Présent</span></td>
-                                            <td><button class="btn btn-sm btn-outline-primary" disabled>Marqué</button></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Base de données avancées</td>
-                                            <td>11:30 - 13:30</td>
-                                            <td>Prof. Dubois</td>
-                                            <td><span class="presence-status pending"><i class="fas fa-clock me-1"></i>En attente</span></td>
-                                            <td><a href="participation.html" class="btn btn-sm btn-primary">Marquer présence</a></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Intelligence Artificielle</td>
-                                            <td>14:30 - 16:30</td>
-                                            <td>Prof. Lefebvre</td>
-                                            <td><span class="presence-status absent"><i class="fas fa-times me-1"></i>Non commencé</span></td>
-                                            <td><button class="btn btn-sm btn-outline-secondary" disabled>Indisponible</button></td>
-                                        </tr>
+                                        <?php if (!empty($seances)): ?>
+                                            <?php foreach ($seances as $seance): ?>
+                                                <?php
+                                                $etat = '';
+                                                $badgeClass = '';
+                                                $action = '';
+
+                                                // Déterminer le statut selon l'heure
+                                                if ($seance['heureDebut'] <= $heureActuelle && $seance['heureFin'] >= $heureActuelle) {
+                                                    $etat = 'En cours';
+                                                    $badgeClass = 'pending';
+                                                    $action = '<a href="ParticipationAuxCours.php?id=' . $seance['id'] . '" class="btn btn-sm btn-primary">Marquer présence</a>';
+                                                } elseif ($seance['heureDebut'] > $heureActuelle) {
+                                                    $etat = 'À venir';
+                                                    $badgeClass = 'absent';
+                                                    $action = '<button class="btn btn-sm btn-outline-secondary" disabled>Indisponible</button>';
+                                                } else {
+                                                    $etat = 'Terminée';
+                                                    $badgeClass = 'present';
+                                                    $action = '<button class="btn btn-sm btn-outline-primary" disabled>Marquée</button>';
+                                                }
+                                                ?>
+                                                <tr>
+                                                    <td><?= htmlspecialchars($seance['titre']) ?></td>
+                                                    <td><?= htmlspecialchars(substr($seance['heureDebut'], 0, 5)) ?> - <?= htmlspecialchars(substr($seance['heureFin'], 0, 5)) ?></td>
+                                                    <td><?= htmlspecialchars($seance['nom'] . ' ' . $seance['prenom']) ?></td>
+                                                    <td><span class="presence-status <?= $badgeClass ?>"><i class="fas fa-clock me-1"></i><?= $etat ?></span></td>
+                                                    <td><?= $action ?></td>
+                                                </tr>
+
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">Aucune séance prévue aujourd’hui</td>
+                                            </tr>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -427,34 +480,51 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <a href="participation.html" class="btn btn-primary">
+                                <a href="./ParticipationAuxCours.php" class="btn btn-primary">
                                     <i class="fas fa-camera me-2"></i>Marquer présence
                                 </a>
-                                <a href="presences.html" class="btn btn-outline-primary">
+                                <a href="./historiquePresences.php" class="btn btn-outline-primary">
                                     <i class="fas fa-history me-2"></i>Historique des présences
                                 </a>
-                                <a href="profil.html" class="btn btn-outline-primary">
+                                <a href="../Profil/GestionDuProfil.php" class="btn btn-outline-primary">
                                     <i class="fas fa-user-edit me-2"></i>Mon profil
                                 </a>
                             </div>
                         </div>
                     </div>
-
                     <!-- Prochain cours -->
                     <div class="card mt-3">
                         <div class="card-header">
-                            <i class="fas fa-clock me-2"></i> Prochain cours
+                            <i class="fas fa-clock me-2"></i>
+                            Prochain cours
                         </div>
                         <div class="card-body">
-                            <h6>Base de données avancées</h6>
-                            <p class="mb-1"><strong>Prof.:</strong> Dubois</p>
-                            <p class="mb-1"><strong>Heure:</strong> 11:30 - 13:30</p>
-                            <p class="mb-0"><strong>Salle:</strong> Virtuelle - Teams</p>
-                            <div class="mt-2">
-                                <span class="badge bg-warning">Commence dans 45 min</span>
-                            </div>
+                            <?php if ($seanceProchaine): ?>
+                                <h6><?= htmlspecialchars($seanceProchaine['titre']) ?></h6>
+                                <p class="mb-1"><strong>Prof.:</strong><?= htmlspecialchars($seanceProchaine['nom'] . ' ' . $seanceProchaine['prenom']) ?></p>
+                                <p class="mb-1">
+                                    <strong>Heure:</strong>
+                                    <?= substr($seanceProchaine['heureDebut'], 0, 5) ?> - <?= substr($seanceProchaine['heureFin'], 0, 5) ?>
+                                </p>
+                                <p class="mb-0"><strong>Salle:</strong> <?= htmlspecialchars($seanceProchaine['salle'] ?? 'Virtuelle - Teams') ?></p>
+
+                                <?php
+                                $timestampDebut = strtotime($seanceProchaine['heureDebut']);
+                                $timestampActuel = strtotime($heureActuelle);
+                                $minutesRestantes = round(($timestampDebut - $timestampActuel) / 60);
+
+                                if ($minutesRestantes > 0) {
+                                    echo '<div class="mt-2"><span class="badge bg-warning">Commence dans ' . $minutesRestantes . ' min</span></div>';
+                                } else {
+                                    echo '<div class="mt-2"><span class="badge bg-success">En cours</span></div>';
+                                }
+                                ?>
+                            <?php else: ?>
+                                <p class="text-muted mb-0">Aucun cours à venir pour aujourd’hui.</p>
+                            <?php endif; ?>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -499,7 +569,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
 
 
     <!-- Pied de page -->
-   <?php include("../../Footer/footer.php") ?>
+    <?php include("../../Footer/footer.php") ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- <script>

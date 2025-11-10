@@ -675,7 +675,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <?php if ($role === 'etudiant'): ?>
             <li><a href="../Etudiants/InterfaceAccueil.php" class="<?= $current_page == 'InterfaceAccueil.php' ? 'active' : '' ?>"><i class="fas fa-home"></i> Tableau de Bord</a></li>
             <li><a href="../Etudiants/ParticipationAuxCours.php" class="<?= $current_page == 'ParticipationAuxCours.php' ? 'active' : '' ?>"><i class="fas fa-calendar-alt"></i> Mes Cours</a></li>
-            <li><a href="../Etudiants/Historique.php" class="<?= $current_page == 'Historique.php' ? 'active' : '' ?>"><i class="fas fa-history"></i> Historique</a></li>
+            <li><a href="../Etudiants/historiquePresences.php" class="<?= $current_page == 'Historique.php' ? 'active' : '' ?>"><i class="fas fa-history"></i> Historique</a></li>
             <li><a href="../Profil/GestionDuProfil.php" class="<?= $current_page == 'GestionDuProfil.php' ? 'active' : '' ?>"><i class="fas fa-user"></i> Mon Profil</a></li>
 
         <?php elseif ($role === 'enseignant'): ?>

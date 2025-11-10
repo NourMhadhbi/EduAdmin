@@ -636,6 +636,25 @@ else {
             font-size: 0.85rem;
         }
 
+        .camera-preview video {
+            width: 80px;
+            /* même taille que l’icône */
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+
+
+        .camera-status {
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+
+
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .course-selection {
@@ -875,249 +894,305 @@ else {
                         </div>
                     </div>
 
-                    <div class="presence-methods">
+
+                    <form id="presenceForm" action="../../Controller/VerifyController.php" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="etudiant_id" value="<?= htmlspecialchars($idEtudiant) ?>">
+                        <input type="hidden" name="seance_id" value="<?= htmlspecialchars($seanceEnCours['id']) ?>">
+                        <input type="hidden" name="image" id="imageInput">
+                        <div class="presence-methods">
+                            <div class="method-card">
+                                <div class="method-header">
+                                    <div class="method-icon"> <i class="fas fa-camera"></i> </div>
+                                    <div>
+                                        <div class="method-title">Reconnaissance faciale</div>
+                                        <div class="method-description">Prenez une photo en direct</div>
+                                    </div>
+                                </div>
+                                <div class="camera-preview" id="cameraPreview"> <i class="fas fa-camera"></i>
+                                    <!-- <div class="camera-status">Caméra inactive</div> <small>Cliquez sur "Activer la caméra"</small> -->
+                                    <video id="video" width="320" height="240" autoplay></video>
+                                    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+                                    <div class="camera-status" id="cameraStatus">Caméra inactive</div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="button" id="startCamera" class="btn btn-primary">
+                                        <i class="fas fa-video me-2"></i>Activer la caméra
+                                    </button>
+                                    <button type="button" id="capturePhoto" class="btn btn-success" disabled>
+                                        <i class="fas fa-camera me-2"></i>Prendre la photo
+                                    </button>
+                                    <button type="submit" id="submitPresence" class="btn btn-info" disabled>
+                                        <i class="fas fa-check me-2"></i>Valider présence
+                                    </button>
+                                </div>
+
+                            </div>
+                    </form>
+
+
+                    <form action="../../Controller/VerifyController.php" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="seance_id" value="<?= htmlspecialchars($seanceEnCours['id']) ?>">
+
+                        <input type="hidden" name="etudiant_id" value="<?= htmlspecialchars($idEtudiant) ?>">
+
                         <div class="method-card">
                             <div class="method-header">
                                 <div class="method-icon">
-                                    <i class="fas fa-camera"></i>
+                                    <i class="fas fa-upload"></i>
                                 </div>
                                 <div>
-                                    <div class="method-title">Reconnaissance faciale</div>
-                                    <div class="method-description">Prenez une photo en direct</div>
+                                    <div class="method-title">Téléchargement d'image</div>
+                                    <div class="method-description">Importez une photo existante</div>
                                 </div>
                             </div>
-                            <div class="camera-preview" id="cameraPreview">
-                                <i class="fas fa-camera"></i>
-                                <div class="camera-status">Caméra inactive</div>
-                                <small>Cliquez sur "Activer la caméra"</small>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-primary" id="startCamera">
-                                    <i class="fas fa-video me-2"></i>Activer la caméra
-                                </button>
-                                <button class="btn btn-success" id="capturePhoto" disabled>
-                                    <i class="fas fa-camera me-2"></i>Prendre la photo
-                                </button>
-                            </div>
-                        </div>
 
-                        <form action="../../Controller/VerifyController.php" method="POST" enctype="multipart/form-data">
-                            <input type="hidden" name="seance_id" value="<?= htmlspecialchars($seanceEnCours['id']) ?>">
+                            <div class="upload-container">
+                                <div class="upload-area" id="uploadArea">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <div class="upload-text">Glissez-déposez votre image ici</div>
+                                    <p class="upload-or">ou</p>
 
-                            <input type="hidden" name="etudiant_id" value="<?= htmlspecialchars($idEtudiant) ?>">
-                            <div class="method-card">
-                                <div class="method-header">
-                                    <div class="method-icon">
-                                        <i class="fas fa-upload"></i>
-                                    </div>
-                                    <div>
-                                        <div class="method-title">Téléchargement d'image</div>
-                                        <div class="method-description">Importez une photo existante</div>
-                                    </div>
-                                </div>
-
-                                <div class="upload-container">
-                                    <div class="upload-area" id="uploadArea">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                        <div class="upload-text">Glissez-déposez votre image ici</div>
-                                        <p class="upload-or">ou</p>
-
-                                        <!-- Bouton visible -->
-                                        <button type="button" id="browseBtn" class="btn btn-outline-primary btn-sm">
-                                            <i class="fas fa-folder-open me-2"></i> Parcourir les fichiers
-                                        </button>
-
-                                        <p class="upload-info">Formats supportés : JPG, PNG (max. 5MB)</p>
-
-                                        <!-- Input caché relié au bouton -->
-                                        <input type="file" name="image" id="fileInput" accept="image/png, image/jpeg" style="display: none;" required>
-                                    </div>
-                                </div>
-
-                                <div class="consent-check">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="consentCheck" name="consent" value="1" required>
-                                        <label class="form-check-label" for="consentCheck">
-                                            J'autorise l'utilisation de mon image pour la reconnaissance faciale
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="d-grid">
-                                    <button class="btn btn-success" type="submit" id="validatePresence"
-                                        <?= $minutesRestantes <= 0 ? 'disabled' : '' ?>>
-                                        <i class="fas fa-check-circle me-2"></i> Valider ma présence
+                                    <!-- Bouton visible -->
+                                    <button type="button" id="browseBtn" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-folder-open me-2"></i> Parcourir les fichiers
                                     </button>
+
+                                    <p class="upload-info">Formats supportés : JPG, PNG (max. 5MB)</p>
+
+                                    <!-- Input caché relié au bouton -->
+                                    <input type="file" name="image" id="fileInput" accept="image/png, image/jpeg" style="display: none;" required>
                                 </div>
                             </div>
-                        </form>
 
-                    </div>
-                </div>
-            <?php endif; ?>
-        <?php else: ?>
-            <!-- Affichage pro si aucune séance en cours -->
-            <div class="presence-section">
-                <div class="presence-header">
-                    <div class="presence-title">
-                        <i class="fas fa-info-circle"></i>
-                        <div>
-                            <div>Aucune séance en cours</div>
-                            <small class="text-muted">
-                                Il n'y a pas de cours disponible pour le marquage de présence actuellement.
-                            </small>
+                            <div class="consent-check">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="consentCheck" name="consent" value="1" required>
+                                    <label class="form-check-label" for="consentCheck">
+                                        J'autorise l'utilisation de mon image pour la reconnaissance faciale
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button class="btn btn-success" type="submit" id="validatePresence"
+                                    <?= $minutesRestantes <= 0 ? 'disabled' : '' ?>>
+                                    <i class="fas fa-check-circle me-2"></i> Valider ma présence
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </form>
 
-                <div class="alert alert-warning mt-3">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Info :</strong> Veuillez revenir pendant l’horaire du cours pour marquer votre présence.
+                </div>
+    </div>
+<?php endif; ?>
+<?php else: ?>
+    <!-- Affichage pro si aucune séance en cours -->
+    <div class="presence-section">
+        <div class="presence-header">
+            <div class="presence-title">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <div>Aucune séance en cours</div>
+                    <small class="text-muted">
+                        Il n'y a pas de cours disponible pour le marquage de présence actuellement.
+                    </small>
                 </div>
             </div>
-        <?php endif; ?>
-        <!-- Section 3: Instructions détaillées -->
-        <div class="instructions-section">
-            <h5 class="mb-3"><i class="fas fa-list-alt me-2"></i> Instructions de Participation</h5>
+        </div>
 
-            <div class="instructions-grid">
-                <div class="instruction-card">
-                    <div class="instruction-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="instruction-title">Accéder aux cours</div>
-                    <div class="instruction-description">
-                        Consultez la liste de vos cours planifiés dans la section "Cours Planifiés". Seuls les cours en cours sont disponibles pour le marquage.
-                    </div>
-                </div>
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Info :</strong> Veuillez revenir pendant l’horaire du cours pour marquer votre présence.
+        </div>
+    </div>
+<?php endif; ?>
+<!-- Section 3: Instructions détaillées -->
+<div class="instructions-section">
+    <h5 class="mb-3"><i class="fas fa-list-alt me-2"></i> Instructions de Participation</h5>
 
-                <div class="instruction-card">
-                    <div class="instruction-icon">
-                        <i class="fas fa-mouse-pointer"></i>
-                    </div>
-                    <div class="instruction-title">Sélectionner le cours</div>
-                    <div class="instruction-description">
-                        Cliquez sur le cours auquel vous souhaitez marquer votre présence. Le cours sélectionné sera mis en évidence.
-                    </div>
-                </div>
-
-                <div class="instruction-card">
-                    <div class="instruction-icon">
-                        <i class="fas fa-camera"></i>
-                    </div>
-                    <div class="instruction-title">Choisir la méthode</div>
-                    <div class="instruction-description">
-                        Sélectionnez entre la reconnaissance faciale en direct ou le téléchargement d'une image existante.
-                    </div>
-                </div>
-
-                <div class="instruction-card">
-                    <div class="instruction-icon">
-                        <i class="fas fa-user-check"></i>
-                    </div>
-                    <div class="instruction-title">Valider la présence</div>
-                    <div class="instruction-description">
-                        Après avoir pris ou uploadé votre photo, validez votre présence. Le système confirmera automatiquement.
-                    </div>
-                </div>
+    <div class="instructions-grid">
+        <div class="instruction-card">
+            <div class="instruction-icon">
+                <i class="fas fa-calendar-check"></i>
             </div>
-
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <strong>Important :</strong> Toute tentative de fraude ou d'usurpation d'identité sera sanctionnée selon le règlement intérieur de l'établissement. Votre présence ne sera validée qu'après reconnaissance faciale réussie.
+            <div class="instruction-title">Accéder aux cours</div>
+            <div class="instruction-description">
+                Consultez la liste de vos cours planifiés dans la section "Cours Planifiés". Seuls les cours en cours sont disponibles pour le marquage.
             </div>
+        </div>
 
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <h6><i class="fas fa-lightbulb me-2 text-warning"></i>Conseils pour une bonne reconnaissance</h6>
-                    <ul class="small text-muted">
-                        <li>Assurez-vous d'être dans un endroit bien éclairé</li>
-                        <li>Positionnez votre visage face à la caméra</li>
-                        <li>Évitez les accessoires qui cachent votre visage</li>
-                        <li>Utilisez une photo récente pour le téléchargement</li>
-                    </ul>
-                </div>
-                <div class="col-md-6">
-                    <h6><i class="fas fa-question-circle me-2 text-primary"></i>Problèmes fréquents</h6>
-                    <ul class="small text-muted">
-                        <li>Problème de caméra ? Vérifiez les permissions</li>
-                        <li>Reconnaissance échouée ? Réessayez avec meilleure luminosité</li>
-                        <li>Cours non disponible ? Vérifiez les horaires</li>
-                        <li>Besoin d'aide ? Contactez le support technique</li>
-                    </ul>
-                </div>
+        <div class="instruction-card">
+            <div class="instruction-icon">
+                <i class="fas fa-mouse-pointer"></i>
+            </div>
+            <div class="instruction-title">Sélectionner le cours</div>
+            <div class="instruction-description">
+                Cliquez sur le cours auquel vous souhaitez marquer votre présence. Le cours sélectionné sera mis en évidence.
+            </div>
+        </div>
+
+        <div class="instruction-card">
+            <div class="instruction-icon">
+                <i class="fas fa-camera"></i>
+            </div>
+            <div class="instruction-title">Choisir la méthode</div>
+            <div class="instruction-description">
+                Sélectionnez entre la reconnaissance faciale en direct ou le téléchargement d'une image existante.
+            </div>
+        </div>
+
+        <div class="instruction-card">
+            <div class="instruction-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="instruction-title">Valider la présence</div>
+            <div class="instruction-description">
+                Après avoir pris ou uploadé votre photo, validez votre présence. Le système confirmera automatiquement.
             </div>
         </div>
     </div>
 
-    <!-- Pied de page -->
-    <?php include("../../Footer/footer.php") ?>
-
-    <!-- Snackbar -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-        <div id="snackbarToast"
-            class="toast align-items-center text-bg-<?= $snackbar['type'] ?? 'success' ?> border-0"
-            role="alert" aria-live="assertive" aria-atomic="true"
-            <?= $snackbar ? 'data-bs-autohide="true"' : '' ?>
-            data-bs-delay="3500">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <?= htmlspecialchars($snackbar['message'] ?? '') ?>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                    data-bs-dismiss="toast" aria-label="Fermer"></button>
-            </div>
-        </div>
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Important :</strong> Toute tentative de fraude ou d'usurpation d'identité sera sanctionnée selon le règlement intérieur de l'établissement. Votre présence ne sera validée qu'après reconnaissance faciale réussie.
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const toastEl = document.getElementById("snackbarToast");
-            if (toastEl && "<?= $snackbar ? '1' : '' ?>") {
-                const toast = new bootstrap.Toast(toastEl);
-                toast.show();
-            }
-        });
-    </script>
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <h6><i class="fas fa-lightbulb me-2 text-warning"></i>Conseils pour une bonne reconnaissance</h6>
+            <ul class="small text-muted">
+                <li>Assurez-vous d'être dans un endroit bien éclairé</li>
+                <li>Positionnez votre visage face à la caméra</li>
+                <li>Évitez les accessoires qui cachent votre visage</li>
+                <li>Utilisez une photo récente pour le téléchargement</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h6><i class="fas fa-question-circle me-2 text-primary"></i>Problèmes fréquents</h6>
+            <ul class="small text-muted">
+                <li>Problème de caméra ? Vérifiez les permissions</li>
+                <li>Reconnaissance échouée ? Réessayez avec meilleure luminosité</li>
+                <li>Cours non disponible ? Vérifiez les horaires</li>
+                <li>Besoin d'aide ? Contactez le support technique</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Gestion de la sélection des cours
-        document.querySelectorAll('.course-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const courseId = this.getAttribute('data-course-id');
-                const status = this.querySelector('.course-status').textContent.trim();
+<!-- Pied de page -->
+<?php include("../../Footer/footer.php") ?>
 
-                // Ne permettre la sélection que pour les cours disponibles
-                if (status.includes('En cours') || status.includes('À venir')) {
-                    // Retirer la classe active de toutes les cartes
-                    document.querySelectorAll('.course-card').forEach(c => {
-                        c.classList.remove('active');
-                    });
+<!-- Snackbar -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="snackbarToast"
+        class="toast align-items-center text-bg-<?= $snackbar['type'] ?? 'success' ?> border-0"
+        role="alert" aria-live="assertive" aria-atomic="true"
+        <?= $snackbar ? 'data-bs-autohide="true"' : '' ?>
+        data-bs-delay="3500">
+        <div class="d-flex">
+            <div class="toast-body">
+                <?= htmlspecialchars($snackbar['message'] ?? '') ?>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                data-bs-dismiss="toast" aria-label="Fermer"></button>
+        </div>
+    </div>
+</div>
+<!-- Prendre photo-->
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capturePhoto');
+    const startBtn = document.getElementById('startCamera');
+    const submitBtn = document.getElementById('submitPresence');
+    const imageInput = document.getElementById('imageInput');
+    const cameraStatus = document.getElementById('cameraStatus');
 
-                    // Ajouter la classe active à la carte cliquée
-                    this.classList.add('active');
+    let stream = null;
 
-                    // Mettre à jour l'interface avec le cours sélectionné
-                    updateSelectedCourse(courseId);
-                }
+    // 1. Activer la caméra
+    startBtn.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: true
             });
-        });
-        // Quand on clique sur "Parcourir les fichiers", ça ouvre l'input caché
-        document.getElementById("browseBtn").addEventListener("click", function() {
-            document.getElementById("fileInput").click();
-        });
+            video.srcObject = stream;
+            cameraStatus.textContent = "Caméra active";
+            captureBtn.disabled = false; // activer bouton capture
+        } catch (err) {
+            console.error(err);
+            cameraStatus.textContent = "Erreur caméra";
+        }
+    });
 
-        // (Optionnel) Affiche le nom du fichier sélectionné
-        document.getElementById("fileInput").addEventListener("change", function() {
-            if (this.files.length > 0) {
-                document.querySelector(".upload-text").textContent = "Fichier sélectionné : " + this.files[0].name;
+    // 2. Capturer la photo
+    captureBtn.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const dataURL = canvas.toDataURL('image/jpeg');
+        imageInput.value = dataURL; // stocke l'image pour l'envoyer
+        cameraStatus.textContent = "Photo capturée !";
+        submitBtn.disabled = false; // activer le bouton de validation
+    });
+
+    // Optionnel : arrêter la caméra quand le formulaire est soumis
+    document.getElementById('presenceForm').addEventListener('submit', () => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const toastEl = document.getElementById("snackbarToast");
+        if (toastEl && "<?= $snackbar ? '1' : '' ?>") {
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Gestion de la sélection des cours
+    document.querySelectorAll('.course-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const courseId = this.getAttribute('data-course-id');
+            const status = this.querySelector('.course-status').textContent.trim();
+
+            // Ne permettre la sélection que pour les cours disponibles
+            if (status.includes('En cours') || status.includes('À venir')) {
+                // Retirer la classe active de toutes les cartes
+                document.querySelectorAll('.course-card').forEach(c => {
+                    c.classList.remove('active');
+                });
+
+                // Ajouter la classe active à la carte cliquée
+                this.classList.add('active');
+
+                // Mettre à jour l'interface avec le cours sélectionné
+                updateSelectedCourse(courseId);
             }
         });
-        document.getElementById('voirPlusBtn').addEventListener('click', () => {
-            new bootstrap.Modal(document.getElementById('panelSeances')).show();
-        });
-    </script>
+    });
+    // Quand on clique sur "Parcourir les fichiers", ça ouvre l'input caché
+    document.getElementById("browseBtn").addEventListener("click", function() {
+        document.getElementById("fileInput").click();
+    });
+
+    // (Optionnel) Affiche le nom du fichier sélectionné
+    document.getElementById("fileInput").addEventListener("change", function() {
+        if (this.files.length > 0) {
+            document.querySelector(".upload-text").textContent = "Fichier sélectionné : " + this.files[0].name;
+        }
+    });
+    document.getElementById('voirPlusBtn').addEventListener('click', () => {
+        new bootstrap.Modal(document.getElementById('panelSeances')).show();
+    });
+</script>
 </body>
 
 </html>

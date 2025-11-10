@@ -52,4 +52,23 @@ class seance
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public static function findAllSeancesByEtudiant($etudiant_id)
+    {
+        include(__DIR__ . "/../Connexion/connexion.php");
+
+        $query = "
+    SELECT s.id, s.date, s.heureDebut, s.heureFin, c.titre AS nomCours, CONCAT(u.prenom, ' ', u.nom) AS nomProf
+    FROM seance s
+    JOIN cours c ON s.cours_id = c.id
+    JOIN inscriptioncours i ON i.cours_id = c.id
+    JOIN utilisateur u ON c.enseignant_id = u.id
+    WHERE i.etudiant_id = :etudiant_id
+    ORDER BY s.date DESC, s.heureDebut ASC
+    ";
+
+        $stmt = $conn->prepare($query);
+        $stmt->execute([':etudiant_id' => $etudiant_id]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

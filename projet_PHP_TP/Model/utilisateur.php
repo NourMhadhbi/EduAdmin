@@ -147,6 +147,27 @@ class Utilisateur
 
         return $stats;
     }
+    private function setSessionMatriculeSpecialite($idUtilisateur, $role)
+    {
+        include(__DIR__ . "/../Connexion/connexion.php");
+
+        if (strtolower($role) === 'etudiant') {
+            $stmt = $conn->prepare("SELECT matricule FROM etudiant WHERE id = ?");
+            $stmt->execute([$idUtilisateur]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $_SESSION['matricule'] = $row['matricule'] ?? null;
+            $_SESSION['specialite'] = null;
+        }
+
+        if (strtolower($role) === 'enseignant') {
+            $stmt = $db->prepare("SELECT matricule, specialite FROM enseignant WHERE id = ?");
+            $stmt->execute([$idUtilisateur]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $_SESSION['matricule'] = $row['matricule'] ?? null;
+            $_SESSION['specialite'] = $row['specialite'] ?? null;
+        }
+    }
+
     public static function getEnAttenteCount()
     {
         include(__DIR__ . "/../Connexion/connexion.php");

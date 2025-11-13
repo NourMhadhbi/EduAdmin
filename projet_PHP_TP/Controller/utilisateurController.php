@@ -4,6 +4,13 @@ require_once(__DIR__ . "/../Model/utilisateur.php");
 include_once("configEmail.php");
 class UtilisateurController
 {
+    public function getSessionMatriculeSpecialite()
+    {
+        return [
+            'matricule' => $_SESSION['matricule'] ?? null,
+            'specialite' => $_SESSION['specialite'] ?? null
+        ];
+    }
     public function traiterFormulaire()
     {
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -69,6 +76,7 @@ class UtilisateurController
                 $_SESSION['nom'] = $nom;
                 $_SESSION['prenom'] = $prenom;
                 $_SESSION['photoProfil'] = $photoProfil;
+                $this->getSessionMatriculeSpecialite($utilisateur["id"], $utilisateur["role"]);
                 switch (strtolower($role)) {
                     case 'etudiant':
                         $redirectURL = "/projet_PHP_TP/Vue/Etudiants/InterfaceAccueil.php";
@@ -144,6 +152,7 @@ class UtilisateurController
             $_SESSION['nom'] = $utilisateur["nom"];
             $_SESSION['prenom'] = $utilisateur["prenom"];
             $_SESSION['photoProfil'] = $utilisateur["photoProfil"];
+            $this->getSessionMatriculeSpecialite($utilisateur["id"], $utilisateur["role"]);
             switch (strtolower($utilisateur["role"])) {
                 case "admin":
                     header("Location: ../Vue/Administrateur/DashboardAdmin.php");

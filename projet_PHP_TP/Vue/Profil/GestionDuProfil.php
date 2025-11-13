@@ -7,6 +7,10 @@ if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
 $nom = $_SESSION['nom'] ?? '';
 $prenom = $_SESSION['prenom'] ?? '';
 $email = $_SESSION['email'];
+$role = $_SESSION['role'];
+
+$matricule = $_SESSION['matricule'] ?? '';
+$specialite = $_SESSION['specialite'] ?? '';
 $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -569,11 +573,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
                                 <i class="fas fa-lock"></i> Sécurité du compte
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="privacy-tab" data-bs-toggle="tab" data-bs-target="#privacy" type="button" role="tab" aria-controls="privacy" aria-selected="false">
-                                <i class="fas fa-shield-alt"></i> Confidentialité
-                            </button>
-                        </li>
+
                     </ul>
                     <div class="tab-content" id="profileTabsContent">
                         <!-- Onglet Informations personnelles -->
@@ -583,43 +583,37 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
                                 <div class="row mb-2">
                                     <div class="col-md-6 mb-2">
                                         <label for="firstName" class="form-label">Prénom</label>
-                                        <input type="text" class="form-control" id="firstName" value="Jean" required>
+                                        <input type="text" class="form-control" id="firstName" value="<?= htmlspecialchars($prenom) ?>" required>
                                     </div>
                                     <div class="col-md-6 mb-2">
                                         <label for="lastName" class="form-label">Nom</label>
-                                        <input type="text" class="form-control" id="lastName" value="Dupont" required>
+                                        <input type="text" class="form-control" id="lastName" value="<?= htmlspecialchars($nom) ?>" required>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
+                                    <?php if ($role == "Enseignant" || $role == "Etudiant") : ?>
+                                        <div class="col-md-6 mb-2">
+
+                                            <label for="studentId" class="form-label">Matricule</label>
+
+                                        </div>
+                                        <input type="text" class="form-control" id="studentId" value="<?= htmlspecialchars($matricule) ?>" disabled>
+                                    <?php endif; ?>
                                     <div class="col-md-6 mb-2">
                                         <label for="email" class="form-label">Adresse email</label>
-                                        <input type="email" class="form-control" id="email" value="jean.dupont@etudiant.univ.fr" required>
-                                    </div>
-                                    <div class="col-md-6 mb-2">
-                                        <label for="phone" class="form-label">Téléphone</label>
-                                        <input type="tel" class="form-control" id="phone" value="+33 6 12 34 56 78">
+                                        <input type="email" class="form-control" id="email" value="<?= htmlspecialchars($email) ?>" required>
                                     </div>
                                 </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6 mb-2">
-                                        <label for="studentId" class="form-label">Numéro étudiant</label>
-                                        <input type="text" class="form-control" id="studentId" value="ETU12345" disabled>
+                                <?php if ($role == "Enseignant"): ?>
+                                    <div class="row mb-2">
+
+                                        <div class="col-md-6 mb-2">
+                                            <label for="teacherSp" class="form-label">Spécialité</label>
+                                            <input type="text" class="form-control" id="teacherSp" value="<?= htmlspecialchars($specialite) ?>" disabled>
+                                        </div>
+
                                     </div>
-                                    <div class="col-md-6 mb-2">
-                                        <label for="formation" class="form-label">Formation</label>
-                                        <input type="text" class="form-control" id="formation" value="Master Informatique" disabled>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-2">
-                                        <label for="promotion" class="form-label">Promotion</label>
-                                        <input type="text" class="form-control" id="promotion" value="2022-2024" disabled>
-                                    </div>
-                                    <div class="col-md-6 mb-2">
-                                        <label for="department" class="form-label">Département</label>
-                                        <input type="text" class="form-control" id="department" value="Informatique" disabled>
-                                    </div>
-                                </div>
+                                <?php endif; ?>
                                 <div class="mt-4">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-save me-2"></i> Enregistrer les modifications
@@ -677,41 +671,6 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
                             </form>
                         </div>
 
-                        <!-- Onglet Confidentialité -->
-                        <div class="tab-pane fade" id="privacy" role="tabpanel" aria-labelledby="privacy-tab">
-                            <h3 class="section-title">Paramètres de confidentialité</h3>
-                            <div class="privacy-settings">
-                                <div class="form-check form-switch mb-4">
-                                    <input class="form-check-input" type="checkbox" id="notificationsSwitch" checked>
-                                    <label class="form-check-label" for="notificationsSwitch">
-                                        Recevoir les notifications par email
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-4">
-                                    <input class="form-check-input" type="checkbox" id="recognitionSwitch" checked>
-                                    <label class="form-check-label" for="recognitionSwitch">
-                                        Autoriser la reconnaissance faciale pour la présence
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-4">
-                                    <input class="form-check-input" type="checkbox" id="dataUsageSwitch">
-                                    <label class="form-check-label" for="dataUsageSwitch">
-                                        Partager les données anonymisées pour améliorer le système
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="analyticsSwitch" checked>
-                                    <label class="form-check-label" for="analyticsSwitch">
-                                        Autoriser l'analyse d'utilisation pour améliorer l'expérience
-                                    </label>
-                                </div>
-                                <div class="mt-4">
-                                    <button class="btn btn-outline-primary">
-                                        <i class="fas fa-save me-2"></i> Enregistrer les préférences
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -719,18 +678,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
     </div>
 
     <!-- Pied de page -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <p>&copy; 2023 Système de Présence Intelligente. Tous droits réservés.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <p>Développement web dynamique - Projet académique</p>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <?php include("../../Footer/footer.php") ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>

@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once(__DIR__ . "/../Model/utilisateur.php");
-
+include_once("configEmail.php");
 class UtilisateurController
 {
     public function traiterFormulaire()
@@ -160,16 +160,221 @@ class UtilisateurController
             exit();
         }
     }
+    public function changerStatut()
+    {
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+            include(__DIR__ . "/../Connexion/connexion.php");
+            require_once(__DIR__ . "/configEmail.php");
+
+            $id = $_POST['id'] ?? null;
+            $action = $_POST['statusAction'] ?? null;
+            $reason = trim($_POST['reason'] ?? '');
+
+            if (!$id || !in_array($action, ['activate', 'deactivate'])) {
+                $_SESSION['snackbar'] = [
+                    'type' => 'danger',
+                    'message' => "Paramètres invalides pour changer le statut."
+                ];
+                header("Location: ../Vue/Administrateur/ListeUtilisateursAd.php");
+                exit;
+            }
+
+            $user = Utilisateur::getById($id);
+
+            if (!$user) {
+                $_SESSION['snackbar'] = [
+                    'type' => 'danger',
+                    'message' => "Utilisateur introuvable."
+                ];
+                header("Location: ../Vue/Administrateur/ListeUtilisateursAd.php");
+                exit;
+            }
+
+            if ($action === 'activate') {
+                $status = 1;
+                $emailSubject = "Activation de votre compte";
+                $emailMessage = "
+                Bonjour {$user['prenom']} {$user['nom']},<br><br>
+                Votre compte sur la plateforme a été <strong>activé</strong> avec succès.<br>
+                Vous pouvez désormais vous connecter à votre espace.<br><br>
+                Cordialement,<br>L’équipe d’administration.
+            ";
+                $snackbarType = 'success';
+                $snackbarMessage = " Le compte de {$user['prenom']} {$user['nom']} a été activé avec succès.";
+            } else {
+                if (empty($reason)) {
+                    $_SESSION['snackbar'] = [
+                        'type' => 'warning',
+                        'message' => "Vous devez fournir une raison pour désactiver le compte."
+                    ];
+                    header("Location: ../Vue/Administrateur/ListeUtilisateursAd.php");
+                    exit;
+                }
+
+                $status = 0;
+                $emailSubject = "Désactivation de votre compte";
+                $emailMessage = "
+                Bonjour {$user['prenom']} {$user['nom']},<br><br>
+                Votre compte a été <strong>désactivé</strong> par l’administrateur.<br>
+                <strong>Raison :</strong> " . htmlspecialchars($reason) . "<br><br>
+                Si vous pensez qu’il s’agit d’une erreur, veuillez contacter le support.<br><br>
+                Cordialement,<br>L’équipe d’administration.
+            ";
+                $snackbarType = 'warning';
+                $snackbarMessage = " Le compte de {$user['prenom']} {$user['nom']} a été désactivé.";
+            }
+
+            $updated = Utilisateur::updateIsActive($id, $status);
+
+            if ($updated) {
+                envoyerEmail($user['email'], $emailSubject, $emailMessage);
+
+                $_SESSION['snackbar'] = [
+                    'type' => $snackbarType,
+                    'message' => $snackbarMessage
+                ];
+            } else {
+                $_SESSION['snackbar'] = [
+                    'type' => 'danger',
+                    'message' => " Impossible de mettre à jour le statut."
+                ];
+            }
+
+            header("Location: ../Vue/Administrateur/ListeUtilisateursAd.php");
+            exit;
+        }
+    }
+    public function envoyerCodeReset()
+    {
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $email = trim($_POST['email'] ?? '');
+
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $_SESSION['error'] = "Adresse e-mail invalide.";
+                $_SESSION['old_email'] = $email;
+                header("Location: ../Vue/Authentification/motdepasse_oublie.php");
+                exit;
+            }
+
+            $user = Utilisateur::getUserByEmail($email);
+            if (!$user) {
+                $_SESSION['error'] = "Aucun compte trouvé pour cet e-mail.";
+                $_SESSION['old_email'] = $email;
+                header("Location: ../Vue/Authentification/motdepasse_oublie.php");
+                exit;
+            }
+
+            $code = random_int(100000, 999999);
+            Utilisateur::saveResetCode($email, $code);
+            $subject = "Code de réinitialisation de votre mot de passe";
+            $message = "
+                Bonjour {$user['prenom']} {$user['nom']},<br><br>
+                Voici votre code de vérification : <strong>$code</strong><br>
+                Ce code est valable pendant 10 minutes.<br><br>
+                Cordialement,<br>L’équipe de support.
+            ";
+
+            envoyerEmail($email, $subject, $message);
+
+            $_SESSION['reset_email'] = $email;
+
+
+            header("Location: ../Vue/Authentification/verification_code.php");
+            exit;
+        }
+    }
+
+    public function verifierCodeReset()
+    {
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $email = $_SESSION['reset_email'] ?? '';
+            if (empty($email)) {
+                $_SESSION['error'] = "Session expirée. Veuillez recommencer.";
+                header("Location: ../Vue/Authentification/motdepasse_oublie.php");
+                exit;
+            }
+
+            $code = implode('', [
+                $_POST['code1'] ?? '',
+                $_POST['code2'] ?? '',
+                $_POST['code3'] ?? '',
+                $_POST['code4'] ?? '',
+                $_POST['code5'] ?? '',
+                $_POST['code6'] ?? ''
+            ]);
+
+            if (Utilisateur::verifyResetCode($email, $code)) {
+                $_SESSION['verified_reset'] = true;
+                header("Location: ../Vue/Authentification/nouveau_motdepasse.php");
+            } else {
+                $_SESSION['error'] = "Code invalide ou expiré.";
+                header("Location: ../Vue/Authentification/verification_code.php");
+            }
+            exit;
+        }
+    }
+
+    public function reinitialiserMotDePasse()
+    {
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $email = $_SESSION['reset_email'] ?? '';
+            $verified = $_SESSION['verified_reset'] ?? false;
+            $newPassword = $_POST['newPassword'] ?? '';
+            $confirm = $_POST['confirmPassword'] ?? '';
+
+            if (empty($email) || !$verified) {
+                $_SESSION['error'] = "Accès non autorisé.";
+                header("Location: ../Vue/Authentification/motdepasse_oublie.php");
+                exit;
+            }
+
+            if ($newPassword !== $confirm) {
+                $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
+                header("Location: ../Vue/Authentification/nouveau_motdepasse.php");
+                exit;
+            }
+
+            if (!preg_match('/^(?=.*[0-9])(?=.*[\W_]).{8,}$/', $newPassword)) {
+                $_SESSION['error'] = "Le mot de passe doit contenir au moins 8 caractères, un chiffre et un symbole.";
+                header("Location: ../Vue/Authentification/nouveau_motdepasse.php");
+                exit;
+            }
+
+            $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
+            Utilisateur::updateUserPassword($email, $hashed);
+            unset($_SESSION['reset_email'], $_SESSION['verified_reset']);
+
+            $_SESSION['success'] = "Votre mot de passe a été réinitialisé avec succès.";
+            header("Location: ../Vue/Authentification/connexion.php");
+            exit;
+        }
+    }
 }
+
 
 $controller = new UtilisateurController();
 $action = $_POST['action'] ?? null;
 
-if ($action === 'connexion') {
-    $controller->connecter();
-} elseif ($action === 'inscription') {
-    $controller->traiterFormulaire();
-} else {
-
-    exit("Action non reconnue.");
+switch ($action) {
+    case 'inscription':
+        $controller->traiterFormulaire();
+        break;
+    case 'connexion':
+        $controller->connecter();
+        break;
+    case 'changerStatut':
+        $controller->changerStatut();
+        break;
+    case 'send_reset_code':
+        $controller->envoyerCodeReset();
+        break;
+    case 'verify_reset_code':
+        $controller->verifierCodeReset();
+        break;
+    case 'reset_password':
+        $controller->reinitialiserMotDePasse();
+        break;
+    default:
+        exit("Action non reconnue.");
 }

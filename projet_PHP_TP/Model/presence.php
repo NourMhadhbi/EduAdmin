@@ -96,4 +96,70 @@ class Presence
         $stmt->execute([':etudiant_id' => $etudiant_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public static function getHistoriquePresence()
+    {
+        include(__DIR__ . "/../Connexion/connexion.php");
+
+        $query = "
+        SELECT s.date, s.heureDebut, s.heureFin, c.titre, 
+               CONCAT(u.prenom, ' ', u.nom) AS nomEtudiant,  p.statut,p.seance_id,c.titre,s.date,s.heureDebut,s.heureFin
+        FROM presence p
+        JOIN seance s ON p.seance_id = s.id
+            JOIN cours c ON c.id = s.cours_id 
+            join utilisateur u on p.etudiant_id =u.id
+        ORDER BY p.created_at DESC
+    ";
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public static function getTauxPresenceAnnuel()
+    {
+        include(__DIR__ . "/../Connexion/connexion.php");
+
+        $year = date('Y'); // année actuelle
+
+        $sql = "SELECT COUNT(*) as totalCours, 
+                   SUM(CASE WHEN statut = 'Présent' THEN 1 ELSE 0 END) as nbPresence
+            FROM presence p
+            JOIN seance s ON p.seance_id = s.id
+              AND YEAR(s.date) = :year";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':year' => $year
+        ]);
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $totalCours = $result['totalCours'] ?? 0;
+        $nbPresence = $result['nbPresence'] ?? 0;
+
+        $tauxPresence = $totalCours > 0 ? round(($nbPresence / $totalCours) * 100) : 0;
+
+        return $tauxPresence;
+    }
+    public static function getPresenceMois()
+    {
+        include(__DIR__ . "/../Connexion/connexion.php");
+
+        $year = date('Y');
+        $month = date('m');
+
+        $sql = "SELECT COUNT(*) as nbPresence
+            FROM presence p
+            JOIN seance s ON p.seance_id = s.id
+              AND p.statut = 'Présent'
+              AND YEAR(s.date) = :year
+              AND MONTH(s.date) = :month";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':year' => $year,
+            ':month' => $month
+        ]);
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['nbPresence'] ?? 0;
+    }
 }

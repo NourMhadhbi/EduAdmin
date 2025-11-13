@@ -1,5 +1,8 @@
 <?php
 session_start();
+include("../../Model/utilisateur.php");
+include("../../Model/enseignant.php");
+include("../../Model/etudiant.php");
 if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
     header("Location: ../Authentification/connexion.php");
 
@@ -15,6 +18,21 @@ $nom = $_SESSION['nom'] ?? '';
 $prenom = $_SESSION['prenom'] ?? '';
 $email = $_SESSION['email'];
 $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
+$stats = utilisateur::getStatsByAdmin();
+$activeTab = $_POST['activeTab'] ?? 'students';
+$activeTab = $_POST['activeTab'] ?? 'students';
+
+$enseignants = Enseignant::getAllEnseignants();
+$etudiants = etudiant::getAllEtudiants();
+$studentSearch = $_POST['studentSearch'] ?? '';
+$studentStatus = $_POST['studentStatus'] ?? 'all';
+$etudiants = Utilisateur::getEtudiantsFiltrés($studentSearch, $studentStatus);
+
+$teacherSearch = $_POST['teacherSearch'] ?? '';
+$teacherStatus = $_POST['teacherStatus'] ?? 'all';
+$enseignants = Utilisateur::getEnseignantsFiltrés($teacherSearch, $teacherStatus);
+$snackbar = $_SESSION['snackbar'] ?? null;
+unset($_SESSION['snackbar']);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -575,7 +593,123 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             margin: 0;
         }
 
-        /* Responsive */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1050;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content-custom {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-header-custom {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+
+        .modal-title-custom {
+            font-weight: 600;
+            color: #dc3545;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-body-custom {
+            padding: 1.5rem;
+        }
+
+        .modal-footer-custom {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+
+        .reason-textarea {
+            resize: vertical;
+            min-height: 100px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 0.75rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .reason-textarea:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            outline: 0;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            transform: translateY(-1px);
+        }
+
+        .btn-confirm {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-confirm:hover {
+            background-color: #bb2d3b;
+            border-color: #b02a37;
+            transform: translateY(-1px);
+        }
+
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-overlay.show .modal-content-custom {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 576px) {
+            .modal-content-custom {
+                margin: 0 1rem;
+            }
+        }
+
         @media (max-width: 768px) {
             .nav-menu {
                 flex-direction: column;
@@ -639,10 +773,10 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
 </head>
 
 <body>
- 
+
 
     <!-- Navigation -->
-      <?php include("../NavBar/navbar.php") ?>
+    <?php include("../NavBar/navbar.php") ?>
 
     <!-- Content Area -->
     <div class="content">
@@ -654,7 +788,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                     <i class="fas fa-user-graduate"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>245</h3>
+                    <h3><?= htmlspecialchars($stats['totalEtudiant']) ?></h3>
                     <p>Étudiants</p>
                 </div>
             </div>
@@ -663,7 +797,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                     <i class="fas fa-chalkboard-teacher"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>32</h3>
+                    <h3><?= htmlspecialchars($stats['totalEnseignant']) ?></h3>
                     <p>Enseignants</p>
                 </div>
             </div>
@@ -672,7 +806,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                     <i class="fas fa-user-shield"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>5</h3>
+                    <h3><?= htmlspecialchars($stats['totalAdmin']) ?></h3>
                     <p>Administrateurs</p>
                 </div>
             </div>
@@ -681,133 +815,127 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                     <i class="fas fa-user-clock"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>12</h3>
+                    <h3><?= htmlspecialchars(utilisateur::getEnAttenteCount()) ?></h3>
                     <p>En attente</p>
                 </div>
             </div>
         </div>
 
         <div class="tabs">
-            <div class="tab active" data-tab="students">Étudiants</div>
-            <div class="tab" data-tab="teachers">Enseignants</div>
-            <div class="tab" data-tab="admins">Administrateurs</div>
+
+            <div class="tab <?= ($activeTab === 'students') ? 'active' : '' ?>" data-tab="students">Étudiants</div>
+            <div class="tab <?= ($activeTab === 'teachers') ? 'active' : '' ?>" data-tab="teachers">Enseignants</div>
+
         </div>
 
         <!-- Étudiants Tab -->
-        <div class="tab-content active" id="students-tab">
+        <div class="tab-content <?= ($activeTab === 'students') ? 'active' : '' ?>" id="students-tab">
+
             <div class="table-container">
-                <div class="table-controls">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Rechercher un étudiant...">
+                <form method="POST" id="studentFilterForm">
+                    <div class="table-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="studentSearch" value="<?= htmlspecialchars($studentSearch) ?>" placeholder="Rechercher un étudiant...">
+                        </div>
+                        <div class="filters">
+                            <select name="studentStatus" class="filter-select" onchange="document.getElementById('studentFilterForm').submit()">
+                                <option value="all" <?= $studentStatus === 'all' ? 'selected' : '' ?>>Tous les statuts</option>
+                                <option value="Actif" <?= $studentStatus === 'Actif' ? 'selected' : '' ?>>Actif</option>
+                                <option value="Inactif" <?= $studentStatus === 'Inactif' ? 'selected' : '' ?>>Inactif</option>
+                            </select>
+                        </div>
+                        <input type="hidden" name="activeTab" id="activeTabInput" value="<?= $activeTab ?>">
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
                     </div>
-                    <div class="filters">
-                        <select class="filter-select">
-                            <option>Tous les statuts</option>
-                            <option>Actif</option>
-                            <option>Inactif</option>
-                        </select>
-                        <select class="filter-select">
-                            <option>Toutes les classes</option>
-                            <option>L1 Informatique</option>
-                            <option>L2 Informatique</option>
-                            <option>L3 Informatique</option>
-                        </select>
-                    </div>
-                </div>
+                </form>
+
                 <div class="table-header">
                     <div class="table-title">Liste des Étudiants</div>
-                    <button class="btn btn-primary" id="addStudentBtn">
-                        <i class="fas fa-plus"></i> Ajouter un Étudiant
-                    </button>
+
                 </div>
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Nom</th>
                             <th>Email</th>
-                            <th>Classe</th>
                             <th>Statut</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>STU001</td>
-                            <td>Marie Dupont</td>
-                            <td>marie.dupont@example.com</td>
-                            <td>L3 Informatique</td>
-                            <td><span class="badge badge-success">Actif</span></td>
-                            <td class="action-buttons">
-                                <button class="btn btn-sm btn-primary" onclick="openEditModal('student', 'STU001')">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </button>
-                                <button class="btn btn-sm btn-danger"
-                                    onclick="openDeleteModal('student', 'STU001', 'Marie Dupont')">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>STU002</td>
-                            <td>Jean Martin</td>
-                            <td>jean.martin@example.com</td>
-                            <td>M1 Mathématiques</td>
-                            <td><span class="badge badge-success">Actif</span></td>
-                            <td class="action-buttons">
-                                <button class="btn btn-sm btn-primary" onclick="openEditModal('student', 'STU002')">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </button>
-                                <button class="btn btn-sm btn-danger"
-                                    onclick="openDeleteModal('student', 'STU002', 'Jean Martin')">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>STU003</td>
-                            <td>Sophie Bernard</td>
-                            <td>sophie.bernard@example.com</td>
-                            <td>L2 Physique</td>
-                            <td><span class="badge badge-warning">Inactif</span></td>
-                            <td class="action-buttons">
-                                <button class="btn btn-sm btn-primary" onclick="openEditModal('student', 'STU003')">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </button>
-                                <button class="btn btn-sm btn-danger"
-                                    onclick="openDeleteModal('student', 'STU003', 'Sophie Bernard')">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </td>
-                        </tr>
+                        <?php $i = 1;
+                        ?>
+                        <?php foreach ($etudiants as $et): ?>
+                            <tr data-status="<?= $et['isActive'] ?>">
+                                <td><?= $i++; ?></td>
+                                <td><?= htmlspecialchars($et['prenom'] . ' ' . $et['nom']) ?></td>
+                                <td><?= htmlspecialchars($et['email']) ?></td>
+                                <td>
+                                    <span class="badge <?= $et['isActive'] ? 'badge-success' : 'badge-warning' ?>">
+                                        <?= $et['isActive'] ? 'Actif' : 'Inactif' ?>
+                                    </span>
+                                </td>
+                                <!-- <td>
+                                    <button class="btn btn-sm btn-warning"
+                                        onclick="toggleStatus(<?= $et['id'] ?>, <?= $et['isActive'] ?>)">
+                                        <?= $et['isActive'] ? '<i class="fas fa-toggle-off"></i> Désactiver' : '<i class="fas fa-toggle-on"></i> Activer' ?>
+                                    </button>
+                                </td> -->
+                                <td>
+                                    <?php if ($et['isActive']): ?>
+                                        <!-- Bouton Désactiver -->
+                                        <button type="button" class="btn btn-sm btn-warning" onclick="openReasonModal(<?= $et['id'] ?>, '<?= htmlspecialchars($et['prenom'] . ' ' . $et['nom']) ?>')">
+                                            <i class="fas fa-toggle-off"></i> Désactiver
+                                        </button>
+                                    <?php else: ?>
+                                        <!-- Activer -->
+                                        <form method="POST" action="../../Controller/utilisateurController.php" class="activateForm">
+                                            <input type="hidden" name="action" value="changerStatut">
+                                            <input type="hidden" name="statusAction" value="activate">
+                                            <input type="hidden" name="id" value="<?= $et['id'] ?>">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-toggle-on"></i> Activer
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+
+
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+
                     </tbody>
                 </table>
             </div>
         </div>
 
         <!-- Enseignants Tab -->
-        <div class="tab-content" id="teachers-tab">
+        <div class="tab-content <?= ($activeTab === 'teachers') ? 'active' : '' ?>" id="teachers-tab">
             <div class="table-container">
-                <div class="table-controls">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Rechercher un enseignant...">
+                <form method="POST" id="teacherFilterForm">
+                    <div class="table-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="teacherSearch" value="<?= htmlspecialchars($teacherSearch) ?>" placeholder="Rechercher un enseignant...">
+                        </div>
+                        <div class="filters">
+                            <select name="teacherStatus" class="filter-select" onchange="document.getElementById('teacherFilterForm').submit()">
+                                <option value="all" <?= $teacherStatus === 'all' ? 'selected' : '' ?>>Tous les statuts</option>
+                                <option value="Actif" <?= $teacherStatus === 'Actif' ? 'selected' : '' ?>>Actif</option>
+                                <option value="Inactif" <?= $teacherStatus === 'Inactif' ? 'selected' : '' ?>>Inactif</option>
+                            </select>
+                        </div>
+                        <input type="hidden" name="activeTab" id="activeTabInput" value="<?= $activeTab ?>">
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
                     </div>
-                    <div class="filters">
-                        <select class="filter-select">
-                            <option>Tous les départements</option>
-                            <option>Informatique</option>
-                            <option>Mathématiques</option>
-                            <option>Physique</option>
-                        </select>
-                    </div>
-                </div>
+                </form>
+
                 <div class="table-header">
                     <div class="table-title">Liste des Enseignants</div>
-                    <button class="btn btn-primary" id="addTeacherBtn">
-                        <i class="fas fa-plus"></i> Ajouter un Enseignant
-                    </button>
+
                 </div>
                 <table>
                     <thead>
@@ -815,298 +943,198 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                             <th>ID</th>
                             <th>Nom</th>
                             <th>Email</th>
-                            <th>Département</th>
+
                             <th>Statut</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>TCH001</td>
-                            <td>Prof. Dubois</td>
-                            <td>dubois@example.com</td>
-                            <td>Informatique</td>
-                            <td><span class="badge badge-success">Actif</span></td>
-                            <td class="action-buttons">
-                                <button class="btn btn-sm btn-primary" onclick="openEditModal('teacher', 'TCH001')">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </button>
-                                <button class="btn btn-sm btn-danger"
-                                    onclick="openDeleteModal('teacher', 'TCH001', 'Prof. Dubois')">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>TCH002</td>
-                            <td>Prof. Laurent</td>
-                            <td>laurent@example.com</td>
-                            <td>Mathématiques</td>
-                            <td><span class="badge badge-success">Actif</span></td>
-                            <td class="action-buttons">
-                                <button class="btn btn-sm btn-primary" onclick="openEditModal('teacher', 'TCH002')">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </button>
-                                <button class="btn btn-sm btn-danger"
-                                    onclick="openDeleteModal('teacher', 'TCH002', 'Prof. Laurent')">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </td>
-                        </tr>
+                        <?php $i = 1;
+                        ?>
+                        <?php foreach ($enseignants as $e): ?>
+                            <tr data-status="<?= $et['isActive'] ?>">
+                                <td><?= $i++; ?></td>
+                                <td><?= htmlspecialchars($e['prenom'] . ' ' . $e['nom']) ?></td>
+                                <td><?= htmlspecialchars($e['email']) ?></td>
+                                <td>
+                                    <span class="badge <?= $e['isActive'] ? 'badge-success' : 'badge-warning' ?>">
+                                        <?= $e['isActive'] ? 'Actif' : 'Inactif' ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?php if ($et['isActive']): ?>
+                                        <!-- Bouton Désactiver -->
+                                        <button type="button" class="btn btn-sm btn-warning" onclick="openReasonModal(<?= $et['id'] ?>, '<?= htmlspecialchars($et['prenom'] . ' ' . $et['nom']) ?>')">
+                                            <i class="fas fa-toggle-off"></i> Désactiver
+                                        </button>
+                                    <?php else: ?>
+                                        <!-- Activer -->
+                                        <form method="POST" action="../../Controller/utilisateurController.php" class="activateForm">
+
+                                            <input type="hidden" name="action" value="changerStatut">
+                                            <input type="hidden" name="statusAction" value="activate">
+                                            <input type="hidden" name="id" value="<?= $et['id'] ?>">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-toggle-on"></i> Activer
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Administrateurs Tab -->
-        <div class="tab-content" id="admins-tab">
-            <div class="table-container">
-                <div class="table-header">
-                    <div class="table-title">Liste des Administrateurs</div>
-                    <button class="btn btn-primary" id="addAdminBtn">
-                        <i class="fas fa-plus"></i> Ajouter un Administrateur
+
+    </div>
+
+    <!-- Modal pour raison -->
+    <div class="modal-overlay" id="reasonModal">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title-custom">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Désactiver l'utilisateur <span id="modalUserName" class="fw-bold"></span>
+                </h5>
+            </div>
+            <form method="POST" action="../../Controller/utilisateurController.php">
+                <div class="modal-body-custom">
+                    <input type="hidden" name="action" value="changerStatut">
+                    <input type="hidden" name="statusAction" value="deactivate">
+                    <input type="hidden" name="id" id="modalUserId">
+
+                    <div class="mb-3">
+                        <label for="reasonText" class="form-label">Raison de la désactivation :</label>
+                        <textarea id="reasonText" name="reason" class="form-control reason-textarea" rows="4" placeholder="Veuillez saisir la raison de la désactivation..." required></textarea>
+                      
+                    </div>
+                </div>
+                <div class="modal-footer-custom d-flex justify-content-between">
+                    <button type="button" class="btn btn-cancel" onclick="closeReasonModal()">
+                        <i class="fas fa-times me-1"></i> Annuler
+                    </button>
+                    <button type="submit" class="btn btn-confirm">
+                        <i class="fas fa-check me-1"></i> Confirmer la désactivation
                     </button>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nom</th>
-                            <th>Email</th>
-                            <th>Rôle</th>
-                            <th>Dernière Connexion</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ADM001</td>
-                            <td>Admin Principal</td>
-                            <td>admin@example.com</td>
-                            <td>Super Admin</td>
-                            <td>12 Nov 2023, 09:45</td>
-                            <td class="action-buttons">
-                                <button class="btn btn-sm btn-primary" onclick="openEditModal('admin', 'ADM001')">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>ADM002</td>
-                            <td>Gestionnaire Cours</td>
-                            <td>cours.admin@example.com</td>
-                            <td>Admin Cours</td>
-                            <td>11 Nov 2023, 14:20</td>
-                            <td class="action-buttons">
-                                <button class="btn btn-sm btn-primary" onclick="openEditModal('admin', 'ADM002')">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            </form>
         </div>
     </div>
-
-    <!-- Add Student Modal -->
-    <div class="modal" id="addStudentModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Ajouter un Étudiant</div>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Prénom</label>
-                        <input type="text" class="form-control" placeholder="Entrez le prénom">
+    <?php if ($snackbar): ?>
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+            <div id="snackbarToast"
+                class="toast align-items-center text-bg-<?= htmlspecialchars($snackbar['type']) ?> border-0"
+                role="alert" aria-live="assertive" aria-atomic="true"
+                data-bs-autohide="true" data-bs-delay="3500">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <?= htmlspecialchars($snackbar['message']) ?>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Nom</label>
-                        <input type="text" class="form-control" placeholder="Entrez le nom">
-                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast" aria-label="Fermer"></button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" placeholder="Entrez l'email">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Classe</label>
-                    <select class="form-control">
-                        <option>Sélectionnez une classe</option>
-                        <option>L1 Informatique</option>
-                        <option>L2 Informatique</option>
-                        <option>L3 Informatique</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Date de naissance</label>
-                    <input type="date" class="form-control">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('addStudentModal')">Annuler</button>
-                <button class="btn btn-success">Enregistrer</button>
             </div>
         </div>
-    </div>
-
-    <!-- Edit User Modal -->
-    <div class="modal" id="editUserModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="editModalTitle">Modifier l'utilisateur</div>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Prénom</label>
-                        <input type="text" class="form-control" value="Marie">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Nom</label>
-                        <input type="text" class="form-control" value="Dupont">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" value="marie.dupont@example.com">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Classe / Département</label>
-                    <select class="form-control">
-                        <option>L1 Informatique</option>
-                        <option>L2 Informatique</option>
-                        <option selected>L3 Informatique</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Statut</label>
-                    <select class="form-control">
-                        <option selected>Actif</option>
-                        <option>Inactif</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('editUserModal')">Annuler</button>
-                <button class="btn btn-success">Enregistrer les modifications</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div class="modal confirmation-modal" id="deleteConfirmModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Confirmation de suppression</div>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="confirmation-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <div class="confirmation-text" id="deleteConfirmText">
-                    Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('deleteConfirmModal')">Annuler</button>
-                <button class="btn btn-danger" id="confirmDeleteBtn">Supprimer définitivement</button>
-            </div>
-        </div>
-    </div>
-   <?php include("../../Footer/footer.php") ?>
+    <?php endif; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include("../../Footer/footer.php") ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Tab functionality
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
+        document.addEventListener('DOMContentLoaded', () => {
+            let activeTab = localStorage.getItem('activeTab');
+            if (activeTab !== 'students' && activeTab !== 'teachers') {
+                activeTab = 'students';
+            }
+            activateTab(activeTab);
 
-                // Update active tab
-                this.parentElement.querySelectorAll('.tab').forEach(t => {
-                    t.classList.remove('active');
-                });
-                this.classList.add('active');
 
-                // Show corresponding tab content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    activateTab(tabId);
+                    localStorage.setItem('activeTab', tabId);
                 });
-                document.getElementById(tabId + '-tab').classList.add('active');
             });
+
+            function activateTab(tabId) {
+                // Retirer active sur tous les onglets
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                const tab = document.querySelector(`.tab[data-tab="${tabId}"]`);
+                if (tab) tab.classList.add('active');
+
+                // Retirer active sur tous les contenus
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                const tabContent = document.getElementById(tabId + '-tab');
+                if (tabContent) tabContent.classList.add('active');
+            }
+
         });
 
         // Modal functionality
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
+        function openReasonModal(userId, userName) {
+            document.getElementById('modalUserId').value = userId;
+            document.getElementById('modalUserName').innerText = userName;
+
+            const modal = document.getElementById('reasonModal');
+            modal.classList.add('show');
             document.body.style.overflow = 'hidden';
+
+            setTimeout(() => {
+                document.getElementById('reasonText').focus();
+            }, 300);
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+        function closeReasonModal() {
+            const modal = document.getElementById('reasonModal');
+            modal.classList.remove('show');
             document.body.style.overflow = 'auto';
+
+
+            document.getElementById('reasonText').value = '';
         }
 
-        // Add Student Modal
-        document.getElementById('addStudentBtn').addEventListener('click', function() {
-            openModal('addStudentModal');
-        });
-
-        // Edit User Modal
-        function openEditModal(userType, userId) {
-            const title = document.getElementById('editModalTitle');
-            if (userType === 'student') {
-                title.textContent = 'Modifier l\'étudiant';
-            } else if (userType === 'teacher') {
-                title.textContent = 'Modifier l\'enseignant';
-            } else {
-                title.textContent = 'Modifier l\'administrateur';
-            }
-            openModal('editUserModal');
-        }
-
-        // Delete Confirmation Modal
-        function openDeleteModal(userType, userId, userName) {
-            const text = document.getElementById('deleteConfirmText');
-            if (userType === 'student') {
-                text.textContent = `Êtes-vous sûr de vouloir supprimer l'étudiant "${userName}" ? Cette action est irréversible.`;
-            } else if (userType === 'teacher') {
-                text.textContent = `Êtes-vous sûr de vouloir supprimer l'enseignant "${userName}" ? Cette action est irréversible.`;
-            } else {
-                text.textContent = `Êtes-vous sûr de vouloir supprimer l'administrateur "${userName}" ? Cette action est irréversible.`;
-            }
-
-            // Set up the delete button
-            const deleteBtn = document.getElementById('confirmDeleteBtn');
-            deleteBtn.onclick = function() {
-                // Here you would typically make an API call to delete the user
-                alert(`Utilisateur ${userName} supprimé avec succès!`);
-                closeModal('deleteConfirmModal');
-                // In a real app, you would refresh the table or remove the row
-            };
-
-            openModal('deleteConfirmModal');
-        }
-
-        // Close modals when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
-                document.body.style.overflow = 'auto';
+        document.getElementById('reasonModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeReasonModal();
             }
         });
 
-        // Close modals with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.modal').forEach(modal => {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                });
+                closeReasonModal();
             }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            var toastEl = document.getElementById('snackbarToast');
+            if (toastEl) {
+                var toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            }
+        });
+        document.querySelectorAll('.activateForm').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const userName = "<?= htmlspecialchars($et['prenom'] . ' ' . $et['nom']) ?>";
+
+                Swal.fire({
+                    title: 'Êtes-vous sûr ?',
+                    text: `Voulez-vous vraiment activer ${userName} ?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Oui, activer',
+                    cancelButtonText: 'Annuler'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
         });
     </script>
 </body>

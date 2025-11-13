@@ -86,6 +86,29 @@ $current_page = basename($_SERVER['PHP_SELF']);
         cursor: pointer;
     }
 
+    .modal {
+        backdrop-filter: blur(2px);
+    }
+
+    .notification-modal.modal {
+        z-index: 1060;
+    }
+
+    .modal-backdrop {
+        z-index: 1040;
+    }
+
+
+    .modal-content {
+        pointer-events: auto;
+    }
+
+
+    body.modal-open {
+        overflow: hidden;
+        padding-right: 0 !important;
+    }
+
     .user-profile img {
         width: 40px;
         height: 40px;
@@ -538,7 +561,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             padding: 15px 20px;
         }
     }
-    
 </style>
 <!-- HEADER -->
 <div class="header">
@@ -598,59 +620,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#allNotificationsModal">
                             <i class="fas fa-list me-1"></i>Voir toutes les notifications
                         </button>
+
                     </div>
                 </div>
             </div>
 
-
-            <div class="modal fade notification-modal" id="allNotificationsModal" tabindex="-1" aria-labelledby="allNotificationsModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title d-flex align-items-center gap-2">
-                                <i class="fas fa-bell"></i> Toutes les notifications
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                        </div>
-
-                        <div class="modal-body">
-                            <?php if (empty($notifications)): ?>
-                                <div class="text-center p-3 text-muted">Aucune notification</div>
-                            <?php else: ?>
-                                <div class="notification-list">
-                                    <?php foreach ($notifications as $notif): ?>
-                                        <?php
-                                        $icon = $notif['icone'] ?? 'fa-bell';
-                                        $classLu = $notif['lu'] == 0 ? 'unread' : '';
-                                        ?>
-                                        <div class="notification-item notification-<?= htmlspecialchars($notif['icone']) ?> <?= $classLu ?>">
-                                            <div class="notification-content">
-                                                <div class="notification-icon">
-                                                    <i class="fas <?= $icon ?>"></i>
-                                                </div>
-                                                <div class="notification-info">
-                                                    <div class="notification-message"><?= htmlspecialchars($notif['titre']) ?></div>
-                                                    <div class="notification-preview"><?= htmlspecialchars($notif['message']) ?></div>
-                                                    <div class="notification-time"><?= date('d/m/Y H:i', strtotime($notif['date_creation'])) ?></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="modal-footer">
-                            <a href="?markAllRead=1" class="btn btn-primary">
-                                <i class="fas fa-check-double me-2"></i>Tout marquer comme lu
-                            </a>
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                <i class="fas fa-times me-2"></i>Fermer
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
 
             <div class="dropdown">
@@ -694,4 +668,52 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <li><a href="../Profil/GestionDuProfil.php" class="<?= $current_page == 'GestionDuProfil.php' ? 'active' : '' ?>"><i class="fas fa-user"></i> Mon Profil</a></li>
         <?php endif; ?>
     </ul>
+</div>
+<div class="modal fade notification-modal" id="allNotificationsModal" tabindex="-1" aria-labelledby="allNotificationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <i class="fas fa-bell"></i> Toutes les notifications
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+
+            <div class="modal-body">
+                <?php if (empty($notifications)): ?>
+                    <div class="text-center p-3 text-muted">Aucune notification</div>
+                <?php else: ?>
+                    <div class="notification-list">
+                        <?php foreach ($notifications as $notif): ?>
+                            <?php
+                            $icon = $notif['icone'] ?? 'fa-bell';
+                            $classLu = $notif['lu'] == 0 ? 'unread' : '';
+                            ?>
+                            <div class="notification-item notification-<?= htmlspecialchars($notif['icone']) ?> <?= $classLu ?>">
+                                <div class="notification-content">
+                                    <div class="notification-icon">
+                                        <i class="fas <?= $icon ?>"></i>
+                                    </div>
+                                    <div class="notification-info">
+                                        <div class="notification-message"><?= htmlspecialchars($notif['titre']) ?></div>
+                                        <div class="notification-preview"><?= htmlspecialchars($notif['message']) ?></div>
+                                        <div class="notification-time"><?= date('d/m/Y H:i', strtotime($notif['date_creation'])) ?></div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="modal-footer">
+                <a href="?markAllRead=1" class="btn btn-primary">
+                    <i class="fas fa-check-double me-2"></i>Tout marquer comme lu
+                </a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Fermer
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

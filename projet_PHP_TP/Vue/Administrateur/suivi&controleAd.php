@@ -1,9 +1,11 @@
 <?php
 include("../../Model/admin.php");
+include("../../Model/presence.php");
+include("../../Model/cours.php");
 session_start();
+
 if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
     header("Location: ../Authentification/connexion.php");
-
     exit;
 }
 
@@ -17,6 +19,26 @@ $prenom = $_SESSION['prenom'] ?? '';
 $email = $_SESSION['email'];
 $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
 $enseignants = Admin::getEnseignants();
+$presences = presence::getHistoriquePresence();
+$coursList = Cours::getAllCours();
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selectedCourse'])) {
+    $_SESSION['selectedCourse'] = $_POST['selectedCourse'];
+    $activeTab = 'attendance';
+}
+
+$activeTab = $_GET['tab'] ?? 'courses';
+$selectedCourse = $_SESSION['selectedCourse'] ?? '';
+
+// Filtrer les présences
+$filteredPresences = [];
+foreach ($presences as $presence) {
+    if ($selectedCourse === '' || $presence['titre'] === $selectedCourse) {
+        $filteredPresences[] = $presence;
+    }
+}
+$nbPresence = Presence::getPresenceMois();
+$tauxPresence = Presence::getTauxPresenceAnnuel();
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -583,19 +605,20 @@ $enseignants = Admin::getEnseignants();
 </head>
 
 <body>
-<!-- Navigation -->
+    <!-- Navigation -->
     <?php include("../NavBar/navbar.php") ?>
 
     <!-- Content Area -->
     <div class="content">
         <div class="tabs">
-            <div class="tab active" data-tab="courses">Gestion des Cours</div>
-            <div class="tab" data-tab="attendance">Suivi de Présence</div>
-            <div class="tab" data-tab="statistics">Statistiques Globales</div>
+            <div class="tab <?= ($activeTab === 'courses') ? 'active' : '' ?>" data-tab="courses">Gestion des Cours</div>
+            <div class="tab <?= ($activeTab === 'attendance') ? 'active' : '' ?>" data-tab="attendance">Suivi de Présence</div>
+
+
         </div>
 
         <!-- Gestion des Cours Tab -->
-        <div class="tab-content active" id="courses-tab">
+        <div class="tab-content <?= ($activeTab === 'courses') ? 'active' : '' ?>" id="courses-tab">
             <div class="cards">
                 <div class="card">
                     <div class="card-header">
@@ -690,7 +713,7 @@ $enseignants = Admin::getEnseignants();
         </div>
 
         <!-- Suivi de Présence Tab -->
-        <div class="tab-content" id="attendance-tab">
+        <div class="tab-content <?= ($activeTab === 'attendance') ? 'active' : '' ?>" id="attendance-tab">
             <div class="cards">
                 <div class="card">
                     <div class="card-header">
@@ -700,8 +723,8 @@ $enseignants = Admin::getEnseignants();
                         </div>
                     </div>
                     <div class="card-body">
-                        <h3>87.5%</h3>
-                        <p>Moyenne générale</p>
+                        <h3><?php echo $tauxPresence; ?>%</h3>
+                        <p>Moyenne annuelle</p>
                     </div>
                 </div>
                 <div class="card">
@@ -712,36 +735,38 @@ $enseignants = Admin::getEnseignants();
                         </div>
                     </div>
                     <div class="card-body">
-                        <h3>85.2%</h3>
+                        <h3><?php echo $nbPresence; ?></h3>
                         <p>Ce mois-ci</p>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Présence Enseignants</div>
-                        <div class="card-icon" style="background-color: var(--success);">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <h3>94.7%</h3>
-                        <p>Ce mois-ci</p>
-                    </div>
-                </div>
+
             </div>
 
             <div class="table-container">
                 <div class="table-header">
                     <div class="table-title">Détails de Présence</div>
-                    <div>
-                        <select class="form-control" id="courseSelect" style="width: auto; display: inline-block;">
-                            <option>Sélectionner un cours</option>
-                            <option>Algorithmes Avancés</option>
-                            <option>Analyse Complexe</option>
-                        </select>
-                        <button class="btn btn-primary" id="generateReportBtn">Générer Rapport</button>
+                    <div class="d-flex align-items-start gap-2 gap-md-3 gap-lg-4">
+                        <form method="POST" action="" id="presenceFilterForm">
+                            <select class="form-select" name="selectedCourse" onchange="this.form.submit()">
+                                <option value="">Sélectionner un cours</option>
+                                <?php foreach ($coursList as $coursItem): ?>
+                                    <option value="<?= htmlspecialchars($coursItem['titre']) ?>"
+                                        <?= ($selectedCourse === $coursItem['titre']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($coursItem['titre']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </form>
+
+                        <form method="POST" action="../../Controller/coursController.php" target="_blank">
+                            <input type="hidden" name="selectedCourse" value="<?= htmlspecialchars($selectedCourse) ?>">
+                            <button type="submit" name="generatePdf" class="btn btn-primary">
+                                Générer PDF
+                            </button>
+                        </form>
                     </div>
                 </div>
+
                 <table>
                     <thead>
                         <tr>
@@ -753,201 +778,91 @@ $enseignants = Admin::getEnseignants();
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Marie Dupont</td>
-                            <td>Algorithmes Avancés</td>
-                            <td>10 Nov 2023</td>
-                            <td><span class="badge badge-success">Présent</span></td>
-                            <td>10:00 - 12:00</td>
-                        </tr>
-                        <tr>
-                            <td>Jean Martin</td>
-                            <td>Algorithmes Avancés</td>
-                            <td>10 Nov 2023</td>
-                            <td><span class="badge badge-warning">Absent</span></td>
-                            <td>10:00 - 12:00</td>
-                        </tr>
-                        <tr>
-                            <td>Sophie Bernard</td>
-                            <td>Analyse Complexe</td>
-                            <td>09 Nov 2023</td>
-                            <td><span class="badge badge-success">Présent</span></td>
-                            <td>14:00 - 16:00</td>
-                        </tr>
+                        <?php
+
+                        $selectedCourse = $_POST['selectedCourse'] ?? '';
+                        $filteredPresences = [];
+
+                        foreach ($presences as $presence) {
+                            if ($selectedCourse === '' || $presence['titre'] === $selectedCourse) {
+                                $filteredPresences[] = $presence;
+                            }
+                        }
+
+                        if (empty($filteredPresences)): ?>
+                            <tr>
+                                <td colspan="5" style="text-align:center;">Aucune donnée disponible.</td>
+                            </tr>
+                            <?php else:
+                            foreach ($filteredPresences as $presence): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($presence['nomEtudiant']) ?></td>
+                                    <td><?= htmlspecialchars($presence['titre']) ?></td>
+                                    <td><?= date('d M Y', strtotime($presence['date'])) ?></td>
+                                    <td>
+                                        <?php if (strtolower($presence['statut']) === 'présent' || strtolower($presence['statut']) === 'present'): ?>
+                                            <span class="badge badge-success">Présent</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-warning">Absent</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?= htmlspecialchars($presence['heureDebut']) ?> - <?= htmlspecialchars($presence['heureFin']) ?></td>
+                                </tr>
+                        <?php endforeach;
+                        endif;
+                        ?>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Statistiques Globales Tab -->
-        <div class="tab-content" id="statistics-tab">
-            <div class="chart-row">
-                <div class="chart-container">
-                    <div class="chart-title">Évolution des Inscriptions</div>
-                    <canvas id="enrollmentChart"></canvas>
-                </div>
-                <div class="chart-container pie-chart-container">
-                    <div class="chart-title">Répartition par Département</div>
-                    <canvas id="departmentChart"></canvas>
-                </div>
-            </div>
 
-            <div class="chart-row">
-                <div class="chart-container">
-                    <div class="chart-title">Performance des Cours</div>
-                    <canvas id="performanceChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <div class="chart-title">Taux de Réussite</div>
-                    <canvas id="successRateChart"></canvas>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <div class="table-header">
-                    <div class="table-title">Statistiques Détaillées</div>
-                    <button class="btn btn-primary" id="exportDataBtn">Exporter Données</button>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Métrique</th>
-                            <th>Valeur</th>
-                            <th>Évolution</th>
-                            <th>Tendance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Nombre total d'étudiants</td>
-                            <td>1,245</td>
-                            <td>+5%</td>
-                            <td><i class="fas fa-arrow-up" style="color: #4cc9f0;"></i></td>
-                        </tr>
-                        <tr>
-                            <td>Nombre total d'enseignants</td>
-                            <td>68</td>
-                            <td>+3%</td>
-                            <td><i class="fas fa-arrow-up" style="color: #4cc9f0;"></i></td>
-                        </tr>
-                        <tr>
-                            <td>Nombre de cours actifs</td>
-                            <td>142</td>
-                            <td>+12%</td>
-                            <td><i class="fas fa-arrow-up" style="color: #4cc9f0;"></i></td>
-                        </tr>
-                        <tr>
-                            <td>Taux de présence global</td>
-                            <td>87.5%</td>
-                            <td>+2.3%</td>
-                            <td><i class="fas fa-arrow-up" style="color: #4cc9f0;"></i></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
+
     <!-- Modal pour Ajouter un Cours -->
-    <!-- <div class="modal" id="addCourseModal">
+    <div class="modal" id="addCourseModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Ajouter un Nouveau Cours</h3>
                 <button class="modal-close" data-modal="addCourseModal">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="addCourseForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="courseCode">Code du Cours</label>
-                            <input type="text" class="form-control" id="courseCode" placeholder="Ex: INF301" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="courseName">Nom du Cours</label>
-                            <input type="text" class="form-control" id="courseName"
-                                placeholder="Ex: Algorithmes Avancés" required>
-                        </div>
+                <form id="addCourseForm" action="../../Controller/AdminController.php" method="POST">
+                    <input type="hidden" name="action" value="ajouterCours">
+
+                    <div class="form-group">
+                        <label class="form-label" for="courseTitle">Titre du Cours</label>
+                        <input type="text" class="form-control" id="courseTitle" name="titre"
+                            placeholder="Ex: Algorithmique Avancée" required>
                     </div>
+
                     <div class="form-group">
                         <label class="form-label" for="courseTeacher">Enseignant</label>
-                        <select class="form-control" id="courseTeacher" required>
+                        <select class="form-control" id="courseTeacher" name="enseignant_id" required>
                             <option value="">Sélectionner un enseignant</option>
-                            <option value="Prof. Dubois">Prof. Dubois</option>
-                            <option value="Prof. Laurent">Prof. Laurent</option>
-                            <option value="Prof. Martin">Prof. Martin</option>
+                            <?php foreach ($enseignants as $ens): ?>
+                                <option value="<?= htmlspecialchars($ens['id']) ?>">
+                                    <?= htmlspecialchars($ens['nom']) ?> <?= htmlspecialchars($ens['prenom']) ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="startDate">Date de Début</label>
-                            <input type="date" class="form-control" id="startDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="endDate">Date de Fin</label>
-                            <input type="date" class="form-control" id="endDate" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="maxStudents">Nombre Maximum d'Étudiants</label>
-                        <input type="number" class="form-control" id="maxStudents" min="1" max="100" value="30"
-                            required>
-                    </div>
+
                     <div class="form-group">
                         <label class="form-label" for="courseDescription">Description du Cours</label>
-                        <textarea class="form-control" id="courseDescription" rows="3"
+                        <textarea class="form-control" id="courseDescription" name="description" rows="3"
                             placeholder="Description du cours..."></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn" data-modal="addCourseModal">Annuler</button>
+                        <button type="submit" class="btn btn-primary" id="saveCourseBtn">Enregistrer le Cours</button>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button class="btn" data-modal="addCourseModal">Annuler</button>
-                <button class="btn btn-primary" id="saveCourseBtn">Enregistrer le Cours</button>
-            </div>
-        </div>
-    </div> -->
-<!-- Modal pour Ajouter un Cours -->
-<div class="modal" id="addCourseModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 class="modal-title">Ajouter un Nouveau Cours</h3>
-            <button class="modal-close" data-modal="addCourseModal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="addCourseForm" action="../../Controller/AdminController.php" method="POST">
-                <input type="hidden" name="action" value="ajouterCours">
-
-                <div class="form-group">
-                    <label class="form-label" for="courseTitle">Titre du Cours</label>
-                    <input type="text" class="form-control" id="courseTitle" name="titre"
-                        placeholder="Ex: Algorithmique Avancée" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="courseTeacher">Enseignant</label>
-                    <select class="form-control" id="courseTeacher" name="enseignant_id" required>
-                        <option value="">Sélectionner un enseignant</option>
-                        <?php foreach ($enseignants as $ens): ?>
-                            <option value="<?= htmlspecialchars($ens['id']) ?>">
-                                <?= htmlspecialchars($ens['nom']) ?>  <?= htmlspecialchars($ens['prenom']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="courseDescription">Description du Cours</label>
-                    <textarea class="form-control" id="courseDescription" name="description" rows="3"
-                        placeholder="Description du cours..."></textarea>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn" data-modal="addCourseModal">Annuler</button>
-                    <button type="submit" class="btn btn-primary" id="saveCourseBtn">Enregistrer le Cours</button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
     <!-- Modal pour Modifier un Cours -->
     <div class="modal" id="editCourseModal">
         <div class="modal-content">
@@ -1087,492 +1002,71 @@ $enseignants = Admin::getEnseignants();
             </div>
         </div>
     </div>
-       <?php include("../../Footer/footer.php") ?>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- <script>
-        // Tab functionality
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
+    <?php include("../../Footer/footer.php") ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-                // Update active tab
-                this.parentElement.querySelectorAll('.tab').forEach(t => {
-                    t.classList.remove('active');
+    <script>
+        // document.addEventListener('DOMContentLoaded', () => {
+
+        //     const urlParams = new URLSearchParams(window.location.search);
+        //     const activeTab = urlParams.get('tab') || 'courses';
+
+        //     activateTab(activeTab);
+
+        //     document.querySelectorAll('.tab').forEach(tab => {
+        //         tab.addEventListener('click', function() {
+        //             const tabId = this.getAttribute('data-tab');
+        //             activateTab(tabId);
+
+        //             const url = new URL(window.location);
+        //             url.searchParams.set('tab', tabId);
+        //             window.history.pushState({}, '', url);
+        //         });
+        //     });
+
+        //     function activateTab(tabId) {
+        //         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        //         document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+
+        //         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        //         document.getElementById(tabId + '-tab').classList.add('active');
+        //     }
+        // });
+        document.addEventListener('DOMContentLoaded', () => {
+
+            let activeTab = localStorage.getItem('activeTab');
+            if (activeTab !== 'courses' && activeTab !== 'attendance') {
+                activeTab = 'courses';
+            }
+            activateTab(activeTab);
+
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    activateTab(tabId);
+                    localStorage.setItem('activeTab', tabId);
                 });
-                this.classList.add('active');
-
-                // Show corresponding tab content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(tabId + '-tab').classList.add('active');
             });
-        });
 
-        // Modal functionality
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
+            function activateTab(tabId) {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                const tab = document.querySelector(`.tab[data-tab="${tabId}"]`);
+                if (tab) tab.classList.add('active');
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        // Close modals when clicking on close buttons
-        document.querySelectorAll('.modal-close, .modal-footer .btn:not(.btn-primary):not(.btn-success):not(.btn-danger)').forEach(button => {
-            button.addEventListener('click', function() {
-                const modalId = this.getAttribute('data-modal');
-                closeModal(modalId);
-            });
-        });
-
-        // Close modal when clicking outside the modal content
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal(this.id);
-                }
-            });
-        });
-
-        // Button functionalities
-        document.getElementById('addCourseBtn').addEventListener('click', function() {
-            openModal('addCourseModal');
-        });
-
-        document.querySelectorAll('.edit-course-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const row = this.closest('tr');
-                const courseCode = row.cells[0].textContent;
-                const courseName = row.cells[1].textContent;
-                const courseTeacher = row.cells[2].textContent;
-
-                // Pre-fill the edit form with current data
-                document.getElementById('editCourseCode').value = courseCode;
-                document.getElementById('editCourseName').value = courseName;
-                document.getElementById('editCourseTeacher').value = courseTeacher;
-
-                openModal('editCourseModal');
-            });
-        });
-
-        document.querySelectorAll('.delete-course-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const row = this.closest('tr');
-                const courseCode = row.cells[0].textContent;
-                const courseName = row.cells[1].textContent;
-
-                document.getElementById('courseToDeleteName').textContent = `${courseCode} - ${courseName}`;
-                openModal('deleteCourseModal');
-            });
-        });
-
-        document.getElementById('generateReportBtn').addEventListener('click', function() {
-            openModal('generateReportModal');
-        });
-
-        document.getElementById('exportDataBtn').addEventListener('click', function() {
-            alert('Export des données en cours...');
-            // Ici, vous pouvez ajouter le code pour exporter les données
-        });
-
-        // Form submissions
-        document.getElementById('saveCourseBtn').addEventListener('click', function() {
-            const courseCode = document.getElementById('courseCode').value;
-            const courseName = document.getElementById('courseName').value;
-
-            if (courseCode && courseName) {
-                alert(`Cours "${courseCode} - ${courseName}" ajouté avec succès!`);
-                closeModal('addCourseModal');
-                // Ici, vous pouvez ajouter le code pour sauvegarder le cours
-            } else {
-                alert('Veuillez remplir tous les champs obligatoires');
-            }
-        });
-        
-
-        document.getElementById('updateCourseBtn').addEventListener('click', function() {
-            const courseCode = document.getElementById('editCourseCode').value;
-            const courseName = document.getElementById('editCourseName').value;
-
-            if (courseCode && courseName) {
-                alert(`Cours "${courseCode} - ${courseName}" modifié avec succès!`);
-                closeModal('editCourseModal');
-                // Ici, vous pouvez ajouter le code pour mettre à jour le cours
-            } else {
-                alert('Veuillez remplir tous les champs obligatoires');
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                const content = document.getElementById(tabId + '-tab');
+                if (content) content.classList.add('active');
             }
         });
 
-        document.getElementById('confirmDeleteCourseBtn').addEventListener('click', function() {
-            const courseName = document.getElementById('courseToDeleteName').textContent;
-            alert(`Cours "${courseName}" supprimé avec succès!`);
-            closeModal('deleteCourseModal');
-            // Ici, vous pouvez ajouter le code pour supprimer le cours
-        });
 
-        document.getElementById('confirmGenerateReportBtn').addEventListener('click', function() {
-            const selectedCourse = document.getElementById('reportCourse').value;
-            const reportType = document.querySelector('input[name="reportType"]:checked').value;
-            const reportFormat = document.getElementById('reportFormat').value;
 
-            if (selectedCourse) {
-                alert(`Génération du rapport ${reportType} pour ${selectedCourse} en format ${reportFormat}`);
-                closeModal('generateReportModal');
-                // Ici, vous pouvez ajouter le code pour générer le rapport
-            } else {
-                alert('Veuillez sélectionner un cours');
-            }
-        });
 
-        // Report option selection styling
-        document.querySelectorAll('.report-option input').forEach(input => {
-            input.addEventListener('change', function() {
-                document.querySelectorAll('.report-option').forEach(option => {
-                    option.classList.remove('selected');
-                });
-                this.closest('.report-option').classList.add('selected');
-            });
-        });
 
-        // Initialize selected report option
-        document.querySelector('.report-option input:checked').closest('.report-option').classList.add('selected');
 
-        // Charts
-        // Enrollment Chart
-        const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d');
-        const enrollmentChart = new Chart(enrollmentCtx, {
-            type: 'bar',
-            data: {
-                labels: ['2018', '2019', '2020', '2021', '2022', '2023'],
-                datasets: [{
-                    label: 'Nombre d\'étudiants',
-                    data: [800, 950, 1050, 1120, 1180, 1245],
-                    backgroundColor: '#4cc9f0'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                }
-            }
-        });
 
-        // Department Chart
-        const departmentCtx = document.getElementById('departmentChart').getContext('2d');
-        const departmentChart = new Chart(departmentCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Informatique', 'Mathématiques', 'Physique', 'Chimie', 'Biologie', 'Autres'],
-                datasets: [{
-                    data: [35, 25, 15, 10, 8, 7],
-                    backgroundColor: [
-                        '#4361ee',
-                        '#3f37c9',
-                        '#4cc9f0',
-                        '#4895ef',
-                        '#f72585',
-                        '#7209b7'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    }
-                }
-            }
-        });
 
-        // Performance Chart
-        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
-        const performanceChart = new Chart(performanceCtx, {
-            type: 'radar',
-            data: {
-                labels: ['Algorithmes', 'Mathématiques', 'Physique', 'Programmation', 'Réseaux', 'Base de données'],
-                datasets: [{
-                    label: 'Performance Moyenne',
-                    data: [85, 78, 90, 88, 82, 79],
-                    backgroundColor: 'rgba(76, 201, 240, 0.2)',
-                    borderColor: '#4cc9f0',
-                    pointBackgroundColor: '#4cc9f0'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    r: {
-                        angleLines: {
-                            display: true
-                        },
-                        suggestedMin: 0,
-                        suggestedMax: 100
-                    }
-                }
-            }
-        });
-
-        // Success Rate Chart
-        const successRateCtx = document.getElementById('successRateChart').getContext('2d');
-        const successRateChart = new Chart(successRateCtx, {
-            type: 'bar',
-            data: {
-                labels: ['L1', 'L2', 'L3', 'M1', 'M2'],
-                datasets: [{
-                    label: 'Taux de Réussite (%)',
-                    data: [75, 82, 79, 85, 88],
-                    backgroundColor: [
-                        '#4361ee',
-                        '#3f37c9',
-                        '#4cc9f0',
-                        '#4895ef',
-                        '#f72585'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                }
-            }
-        });
-    </script> -->
-        <script>
-        // Tab functionality
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
-
-                // Update active tab
-                this.parentElement.querySelectorAll('.tab').forEach(t => {
-                    t.classList.remove('active');
-                });
-                this.classList.add('active');
-
-                // Show corresponding tab content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(tabId + '-tab').classList.add('active');
-            });
-        });
-
-        // Modal functionality
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        // Close modals when clicking on close buttons
-        document.querySelectorAll('.modal-close, .modal-footer .btn:not(.btn-primary):not(.btn-success):not(.btn-danger)').forEach(button => {
-            button.addEventListener('click', function() {
-                const modalId = this.getAttribute('data-modal');
-                closeModal(modalId);
-            });
-        });
-
-        // Close modal when clicking outside the modal content
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal(this.id);
-                }
-            });
-        });
-
-        // Button functionalities
-        document.getElementById('addCourseBtn').addEventListener('click', function() {
-            openModal('addCourseModal');
-        });
-
-        document.querySelectorAll('.edit-course-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const row = this.closest('tr');
-                const courseCode = row.cells[0].textContent;
-                const courseName = row.cells[1].textContent;
-                const courseTeacher = row.cells[2].textContent;
-
-                // Pre-fill the edit form with current data
-                document.getElementById('editCourseCode').value = courseCode;
-                document.getElementById('editCourseName').value = courseName;
-                document.getElementById('editCourseTeacher').value = courseTeacher;
-
-                openModal('editCourseModal');
-            });
-        });
-
-        document.querySelectorAll('.delete-course-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const row = this.closest('tr');
-                const courseCode = row.cells[0].textContent;
-                const courseName = row.cells[1].textContent;
-
-                document.getElementById('courseToDeleteName').textContent = `${courseCode} - ${courseName}`;
-                openModal('deleteCourseModal');
-            });
-        });
-
-        document.getElementById('generateReportBtn').addEventListener('click', function() {
-            openModal('generateReportModal');
-        });
-
-        document.getElementById('exportDataBtn').addEventListener('click', function() {
-            alert('Export des données en cours...');
-            // Ici, vous pouvez ajouter le code pour exporter les données
-        });
-
-        // Form submissions
-        document.getElementById('saveCourseBtn').addEventListener('click', function() {
-            const courseCode = document.getElementById('courseCode').value;
-            const courseName = document.getElementById('courseName').value;
-
-            if (courseCode && courseName) {
-                alert(`Cours "${courseCode} - ${courseName}" ajouté avec succès!`);
-                closeModal('addCourseModal');
-                // Ici, vous pouvez ajouter le code pour sauvegarder le cours
-            } else {
-                alert('Veuillez remplir tous les champs obligatoires');
-            }
-        });
-
-        document.getElementById('updateCourseBtn').addEventListener('click', function() {
-            const courseCode = document.getElementById('editCourseCode').value;
-            const courseName = document.getElementById('editCourseName').value;
-
-            if (courseCode && courseName) {
-                alert(`Cours "${courseCode} - ${courseName}" modifié avec succès!`);
-                closeModal('editCourseModal');
-                // Ici, vous pouvez ajouter le code pour mettre à jour le cours
-            } else {
-                alert('Veuillez remplir tous les champs obligatoires');
-            }
-        });
-
-        document.getElementById('confirmDeleteCourseBtn').addEventListener('click', function() {
-            const courseName = document.getElementById('courseToDeleteName').textContent;
-            alert(`Cours "${courseName}" supprimé avec succès!`);
-            closeModal('deleteCourseModal');
-            // Ici, vous pouvez ajouter le code pour supprimer le cours
-        });
-
-        document.getElementById('confirmGenerateReportBtn').addEventListener('click', function() {
-            const selectedCourse = document.getElementById('reportCourse').value;
-            const reportType = document.querySelector('input[name="reportType"]:checked').value;
-            const reportFormat = document.getElementById('reportFormat').value;
-
-            if (selectedCourse) {
-                alert(`Génération du rapport ${reportType} pour ${selectedCourse} en format ${reportFormat}`);
-                closeModal('generateReportModal');
-                // Ici, vous pouvez ajouter le code pour générer le rapport
-            } else {
-                alert('Veuillez sélectionner un cours');
-            }
-        });
-
-        // Report option selection styling
-        document.querySelectorAll('.report-option input').forEach(input => {
-            input.addEventListener('change', function() {
-                document.querySelectorAll('.report-option').forEach(option => {
-                    option.classList.remove('selected');
-                });
-                this.closest('.report-option').classList.add('selected');
-            });
-        });
-
-        // Initialize selected report option
-        document.querySelector('.report-option input:checked').closest('.report-option').classList.add('selected');
-
-        // Charts
-        // Enrollment Chart
-        const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d');
-        const enrollmentChart = new Chart(enrollmentCtx, {
-            type: 'bar',
-            data: {
-                labels: ['2018', '2019', '2020', '2021', '2022', '2023'],
-                datasets: [{
-                    label: 'Nombre d\'étudiants',
-                    data: [800, 950, 1050, 1120, 1180, 1245],
-                    backgroundColor: '#4cc9f0'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                }
-            }
-        });
-
-        // Department Chart
-        const departmentCtx = document.getElementById('departmentChart').getContext('2d');
-        const departmentChart = new Chart(departmentCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Informatique', 'Mathématiques', 'Physique', 'Chimie', 'Biologie', 'Autres'],
-                datasets: [{
-                    data: [35, 25, 15, 10, 8, 7],
-                    backgroundColor: [
-                        '#4361ee',
-                        '#3f37c9',
-                        '#4cc9f0',
-                        '#4895ef',
-                        '#f72585',
-                        '#7209b7'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    }
-                }
-            }
-        });
-
-        // Performance Chart
-        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
-        const performanceChart = new Chart(performanceCtx, {
-            type: 'radar',
-            data: {
-                labels: ['Algorithmes', 'Mathématiques', 'Physique', 'Programmation', 'Réseaux', 'Base de données'],
-                datasets: [{
-                    label: 'Performance Moyenne',
-                    data: [85, 78, 90, 88, 82, 79],
-                    backgroundColor: 'rgba(76, 201, 240, 0.2)',
-                    borderColor: '#4cc9f0',
-                    pointBackgroundColor: '#4cc9f0'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    r: {
-                        angleLines: {
-                            display: true
-                        },
-                        suggestedMin: 0,
-                        suggestedMax: 100
-                    }
-                }
-            }
-        });
 
         // Success Rate Chart
         const successRateCtx = document.getElementById('successRateChart').getContext('2d');
@@ -1602,25 +1096,27 @@ $enseignants = Admin::getEnseignants();
             }
         });
 
-    document.addEventListener('DOMContentLoaded', () => {
-    <?php if (isset($_SESSION["success"])): ?>
-        Swal.fire({
-            icon: 'success',
-            title: 'Succès',
-            text: '<?= addslashes($_SESSION["success"]) ?>',
-            showConfirmButton: false,
-            timer: 2000
-        });
-    <?php unset($_SESSION["success"]); endif; ?>
+        document.addEventListener('DOMContentLoaded', () => {
+            <?php if (isset($_SESSION["success"])): ?>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Succès',
+                    text: '<?= addslashes($_SESSION["success"]) ?>',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            <?php unset($_SESSION["success"]);
+            endif; ?>
 
-    <?php if (isset($_SESSION["error"])): ?>
-        Swal.fire({
-            icon: 'error',
-            title: 'Erreur',
-            text: '<?= addslashes($_SESSION["error"]) ?>'
+            <?php if (isset($_SESSION["error"])): ?>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: '<?= addslashes($_SESSION["error"]) ?>'
+                });
+            <?php unset($_SESSION["error"]);
+            endif; ?>
         });
-    <?php unset($_SESSION["error"]); endif; ?>
-});
     </script>
 </body>
 

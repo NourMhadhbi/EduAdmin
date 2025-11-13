@@ -1,5 +1,5 @@
 <?php
-class utilisateur
+class etudiant
 {
     private $id;
     private $matricule;
@@ -22,5 +22,26 @@ class utilisateur
     {
         $s = "";
         return $s;
+    }
+    public static function getAllEtudiants()
+    {
+        include(__DIR__ . "/../Connexion/connexion.php");
+
+        $sql = "
+        SELECT u.id, u.nom, u.prenom, u.email, u.role,
+               e.matricule AS etuMatricule,
+               e.isActive ,
+               u.created_at
+        FROM utilisateur u
+        LEFT JOIN etudiant e ON u.id = e.id
+        WHERE u.role = 'Etudiant'
+        ORDER BY u.created_at ASC
+    ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $users;
     }
 }

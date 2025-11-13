@@ -345,7 +345,7 @@ if (isset($_SESSION["error"])) {
                             <input type="checkbox" class="form-check-input" id="rememberMe">
                             <label class="form-check-label" for="rememberMe">Se souvenir de moi</label>
                         </div>
-                        <a href="reset-password.html" class="forgot-password">Mot de passe oublié?</a>
+                        <a href="../Authentification/motdepasse_oublie.php" class="forgot-password">Mot de passe oublié?</a>
                     </div>
 
                     <button type="submit" class="btn btn-login">Se connecter</button>

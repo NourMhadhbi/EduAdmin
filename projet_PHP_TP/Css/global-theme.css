@@ -1,0 +1,538 @@
+/* ========================================
+   GLOBAL THEME - Blue & Green Color Palette
+   ========================================
+   Apply consistent colors across all pages
+   ======================================== */
+
+:root {
+    /* Primary Colors - Blue Shades */
+    --primary-color: #2563eb;
+    --primary-dark: #1e40af;
+    --primary-light: #3b82f6;
+    --primary-lighter: #60a5fa;
+
+    /* Secondary/Accent Colors - Green Shades */
+    --accent-color: #10b981;
+    --accent-dark: #059669;
+    --accent-light: #34d399;
+
+    /* Neutral Colors */
+    --secondary-color: #15315f;
+    --light-color: #f8fafc;
+    --dark-color: #0f172a;
+
+    /* Status Colors */
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+
+    /* Gray Scale */
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    --gray-light: #e5e7eb;
+    --gray-medium: #6b7280;
+
+    /* Design System */
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+    --border-radius-lg: 16px;
+    --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease;
+
+    /* Navbar Height (Fixed to prevent jumping) */
+    --navbar-height: 56px;
+    --header-height: 70px;
+}
+
+/* ========================================
+   GLOBAL RESETS & BASE STYLES
+   ======================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    color: var(--dark-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    font-size: 15px;
+    /* ========================================
+   NAVIGATION STYLES (ITech University Style)
+   ======================================== */
+
+    :root {
+        --top-bar-height: 0px;
+        --navbar-height: 70px;
+        --total-header-height: var(--navbar-height);
+    }
+
+    body {
+        padding-top: var(--total-header-height);
+    }
+
+    /* 1. Top Bar (Hidden/Removed) */
+    .top-bar {
+        display: none;
+    }
+
+    .top-bar-content {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .top-bar a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .top-bar a:hover {
+        color: var(--accent-color);
+    }
+
+    /* 2. Main Navbar (White, Fixed) */
+    .navbar {
+        height: var(--navbar-height);
+        background-color: white;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        /* Subtle shadow */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 5%;
+        position: fixed;
+        top: var(--top-bar-height);
+        /* Below top bar */
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+
+    /* Logo Area */
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--secondary-color);
+        text-decoration: none;
+    }
+
+    .navbar-brand i {
+        color: var(--primary-color);
+        font-size: 1.8rem;
+    }
+
+    /* Navigation Links (Centered) */
+    .nav-menu {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-link {
+        font-weight: 600;
+        color: #444;
+        /* Dark Grey */
+        text-decoration: none;
+        font-size: 1rem;
+        padding: 0.5rem 0;
+        position: relative;
+        transition: color 0.3s;
+    }
+
+    /* Hover Effect: Teal Text + Underline */
+    .nav-link:hover,
+    .nav-link.active {
+        color: var(--accent-color);
+        /* Teal/Green */
+    }
+
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        background-color: var(--accent-color);
+        transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+        width: 100%;
+    }
+
+    /* Right Side (User Profile & Actions) */
+    .navbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .action-btn {
+        background-color: var(--accent-color);
+        color: white;
+        padding: 0.6rem 1.5rem;
+        border-radius: 4px;
+        /* Slightly squared like ITech */
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.3s;
+    }
+
+    .action-btn:hover {
+        background-color: var(--accent-dark);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* User Profile Dropdown Style Override */
+    .user-profile-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--secondary-color);
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: background 0.3s;
+    }
+
+    .user-profile-nav:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+        color: var(--primary-color);
+    }
+
+    .user-profile-nav img {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--accent-color);
+    }
+
+    /* Notification Bell */
+    .nav-icon {
+        color: var(--secondary-color);
+        font-size: 1.2rem;
+        position: relative;
+        cursor: pointer;
+        background: none;
+        border: none;
+        transition: color 0.3s;
+    }
+
+    .nav-icon:hover {
+        color: var(--primary-color);
+        background: none;
+        transform: none;
+    }
+
+    .notification-badge {
+        top: -5px;
+        right: -5px;
+    }
+
+    /* ========================================
+   MAIN CONTENT AREA
+   ======================================== */
+
+    .main-content {
+        min-height: calc(100vh - var(--header-height) - var(--navbar-height));
+        padding: 2rem;
+        width: 100%;
+        margin-top: 3rem;
+        /* Extra safety margin for fixed navbar */
+    }
+
+    .content {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* ========================================
+   BUTTONS (Global Button Styles)
+   ======================================== */
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-dark) 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    /* ========================================
+   CARDS (Global Card Styles)
+   ======================================== */
+
+    /* ========================================
+   PAGE TITLES & BREADCRUMBS
+   ======================================== */
+
+    .page-title {
+        font-weight: 800;
+        color: var(--secondary-color);
+        margin-bottom: 2rem;
+        position: relative;
+        padding-bottom: 15px;
+        font-size: 2.2rem;
+    }
+
+    .page-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 80px;
+        height: 5px;
+        background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        border-radius: 3px;
+    }
+
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--primary-dark);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--secondary-color);
+    }
+
+    /* ========================================
+   CARDS (Global Card Styles)
+   ======================================== */
+
+    .card {
+        border: none;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        /* Softer border */
+    }
+
+    .card:hover {
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-dark) 100%);
+        /* Green Gradient */
+        color: white;
+        border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        border: none;
+        display: flex;
+        align-items: center;
+    }
+
+    .card-header i {
+        margin-right: 10px;
+        opacity: 0.9;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1rem !important;
+    }
+
+    /* ========================================
+   FOOTER (Fixed Positioning)
+   ======================================== */
+
+    .footer {
+        background: linear-gradient(135deg, var(--dark-color) 0%, var(--secondary-color) 100%);
+        color: var(--gray-300);
+        padding: 3rem 0 1.5rem;
+        margin-top: 3rem;
+        border-top: 3px solid var(--accent-color);
+    }
+
+    .footer a {
+        color: var(--gray-300);
+        transition: var(--transition);
+    }
+
+    .footer a:hover {
+        color: var(--accent-color);
+    }
+
+    .footer .social-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transition: var(--transition);
+    }
+
+    .footer .social-icon:hover {
+        background: var(--accent-color);
+        transform: translateY(-3px);
+    }
+
+    /* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+    @media (max-width: 992px) {
+        body {
+            padding-top: calc(var(--total-header-height) + 20px);
+        }
+
+        .navbar {
+            padding: 0 1rem;
+            justify-content: space-between;
+        }
+
+        .nav-menu {
+            /* display: none; Removed to show menu items */
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Mobile Menu Placeholder - In a real app we'd add a hamburger menu */
+        .nav-menu.active {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: var(--navbar-height);
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .top-bar {
+            display: none;
+            /* Hide top bar on mobile to save space */
+        }
+
+        .navbar {
+            top: 0;
+            height: 70px;
+        }
+
+        body {
+            padding-top: 90px;
+        }
+
+        .main-content {
+            padding: 1rem;
+        }
+
+        .navbar-brand {
+            font-size: 1.2rem;
+        }
+    }
+
+    /* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+    .text-primary {
+        color: var(--primary-color) !important;
+    }
+
+    .text-accent {
+        color: var(--accent-color) !important;
+    }
+
+    .bg-primary {
+        background-color: var(--primary-color) !important;
+    }
+
+    .bg-accent {
+        background-color: var(--accent-color) !important;
+    }
+
+    .border-primary {
+        border-color: var(--primary-color) !important;
+    }
+
+    .border-accent {
+        border-color: var(--accent-color) !important;
+    }
+}

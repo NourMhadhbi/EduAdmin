@@ -1,5 +1,6 @@
 <?php
 session_start();
+include("../../Model/cours.php");
 if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
     header("Location: ../Authentification/connexion.php");
 
@@ -11,10 +12,13 @@ if (strtolower($_SESSION['role']) !== 'etudiant') {
     exit;
 }
 
+
 $nom = $_SESSION['nom'] ?? '';
 $prenom = $_SESSION['prenom'] ?? '';
 $email = $_SESSION['email'];
 $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
+$CoursEnseignant = Cours::getCoursByEnseignant($_SESSION['id']);
+print_r($CoursEnseignant);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -23,6 +27,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historique des Présences - Système de Présence Intelligente</title>
+    <link rel="stylesheet" href="../../Css/global-theme.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -652,7 +657,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             <div class="col-12">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="accueil.html"><i class="fas fa-home me-1"></i>Tableau de bord</a></li>
+                        <li class="breadcrumb-item"><a href="./InterfaceAccueil.php"><i class="fas fa-home me-1"></i>Tableau de bord</a></li>
                         <li class="breadcrumb-item active">Historique des présences</li>
                     </ol>
                 </nav>
@@ -711,11 +716,14 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             <div class="filter-grid">
                 <div>
                     <label for="courseFilter" class="form-label">Cours</label>
-                    <select class="form-select" id="courseFilter">
-                        <option value="">Tous les cours</option>
-                        <option value="web">Développement Web</option>
-                        <option value="bd">Bases de données</option>
-                        <option value="ia">Intelligence Artificielle</option>
+                    <select class="form-select" id="courseSelect" onchange="location = '?cours=' + this.value;">
+                        <option disabled selected>Choisissez un cours</option>
+                        <?php foreach ($CoursEnseignant as $c): ?>
+                            <option value="<?= $c['id'] ?>">
+
+                                <?= htmlspecialchars($c['titre']) ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div>

@@ -31,22 +31,22 @@ class Notification
 
 
 
-    /** Ajouter une notification */
-    public function save()
+    public static function create($utilisateur_id, $titre, $icone, $message)
     {
-        include(__DIR__ . "/../Connexion/connexion.php");
+        require(__DIR__ . "/../Connexion/connexion.php");
+
         $sql = "INSERT INTO notification (utilisateur_id, titre, icone, message, date_creation, lu)
-                VALUES (:utilisateur_id, :titre, :icone, :message, :date_creation, :lu)";
+                VALUES (:utilisateur_id, :titre, :icone, :message, NOW(), 0)";
         $stmt = $conn->prepare($sql);
         return $stmt->execute([
-            ':utilisateur_id' => $this->utilisateur_id,
-            ':titre' => $this->titre,
-            ':icone' => $this->icone,
-            ':message' => $this->message,
-            ':date_creation' => $this->date_creation,
-            ':lu' => $this->lu
+            ':utilisateur_id' => $utilisateur_id,
+            ':titre' => $titre,
+            ':icone' => $icone,
+            ':message' => $message
         ]);
     }
+
+
 
 
     public static function findByUser($utilisateur_id)

@@ -36,7 +36,7 @@ class Utilisateur
         include("../Connexion/connexion.php");
 
         // Vérifier si l'email existe
-        $req = $conn->prepare("SELECT * FROM utilisateur WHERE email = :email");
+        $req = $conn->prepare("SELECT * FROM utilisateur  WHERE email = :email");
         $req->bindParam(':email', $email);
         $req->execute();
 
@@ -147,6 +147,7 @@ class Utilisateur
 
         return $stats;
     }
+
     private function setSessionMatriculeSpecialite($idUtilisateur, $role)
     {
         include(__DIR__ . "/../Connexion/connexion.php");
@@ -185,7 +186,17 @@ class Utilisateur
 
         return $totalEnAttente;
     }
+    public static function getEnseignantById(int $id)
+    {
+        include(__DIR__ . "/../Connexion/connexion.php");
 
+        $sql = "SELECT nom, prenom FROM utilisateur WHERE id = :id LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([':id' => $id]);
+
+        $enseignant = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $enseignant ?: ['nom' => '', 'prenom' => ''];
+    }
     public static function getAllUsers()
     {
         include(__DIR__ . "/../Connexion/connexion.php");
@@ -307,5 +318,90 @@ class Utilisateur
         include(__DIR__ . "/../Connexion/connexion.php");
         $stmt = $conn->prepare("UPDATE utilisateur SET motDePasse = ?, reset_code = NULL, reset_expire = NULL WHERE email = ?");
         $stmt->execute([$newPassword, $email]);
+    }
+    public static function modifierProfil($id, $nom, $prenom, $email, $specialite = null, $photoProfil = null)
+    {
+        include(__DIR__ . "/../Connexion/connexion.php");
+        $stmtCheck = $conn->prepare("SELECT id FROM utilisateur WHERE email = ? AND id != ?");
+        $stmtCheck->execute([$email, $id]);
+        if ($stmtCheck->fetch()) {
+            return ['success' => false, 'message' => "Cet email est déjà utilisé."];
+        }
+        $stmtOld = $conn->prepare("SELECT email FROM utilisateur WHERE id = ?");
+        $stmtOld->execute([$id]);
+        $oldEmail = $stmtOld->fetchColumn();
+        $emailChanged = ($oldEmail !== $email);
+        $stmt = $conn->prepare("UPDATE utilisateur SET nom = ?, prenom = ?, email = ? WHERE id = ?");
+        $stmt->execute([$nom, $prenom, $email, $id]);
+        if ($_SESSION['role'] === 'enseignant') {
+            $stmtEns = $conn->prepare("UPDATE enseignant SET specialite = ?, isActive = ? WHERE id = ?");
+            $stmtEns->execute([$specialite, $emailChanged ? 0 : 1, $id]);
+        } elseif ($_SESSION['role'] === 'etudiant') {
+            $stmtEtu = $conn->prepare("UPDATE etudiant SET isActive = ? WHERE id = ?");
+            $stmtEtu->execute([$emailChanged ? 0 : 1, $id]);
+        }
+        if ($photoProfil !== null) {
+            $stmtPhoto = $conn->prepare("UPDATE utilisateur SET photoProfil = ? WHERE id = ?");
+            $stmtPhoto->execute([$photoProfil, $id]);
+            $_SESSION['photoProfil'] = $photoProfil;
+        }
+
+        return ['success' => true, 'emailChanged' => $emailChanged];
+    }
+    public static function changerMotDePasse($id, $current, $newPassword)
+    {
+        try {
+            include(__DIR__ . "/../Connexion/connexion.php");
+            $stmt = $conn->prepare("SELECT motDePasse FROM utilisateur WHERE id = ?");
+            $stmt->execute([$id]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$user || !password_verify($current, $user['motDePasse'])) {
+                return ['success' => false, 'message' => "Le mot de passe actuel est incorrect."];
+            }
+            $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
+            $stmt = $conn->prepare("UPDATE utilisateur SET motDePasse = ? WHERE id = ?");
+            $stmt->execute([$hashed, $id]);
+
+            return ['success' => true];
+        } catch (PDOException $e) {
+            return ['success' => false, 'message' => "Erreur : " . $e->getMessage()];
+        }
+    }
+    public static function getInscriptionsEvolution()
+    {
+        include(__DIR__ . "/../Connexion/connexion.php");
+
+        $query = "
+        SELECT 
+            MONTH(created_at) AS mois,
+            role,
+            COUNT(*) AS total
+        FROM utilisateur
+        WHERE YEAR(created_at) = YEAR(CURDATE())
+        GROUP BY MONTH(created_at), role
+        ORDER BY mois
+    ";
+
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Préparer les tableaux des 12 mois (remplis à 0 par défaut)
+        $data = [
+            'enseignant' => array_fill(1, 12, 0),
+            'etudiant' => array_fill(1, 12, 0)
+        ];
+
+        foreach ($results as $row) {
+            $mois = (int)$row['mois'];
+            $role = strtolower($row['role']);
+            if (isset($data[$role])) {
+                $data[$role][$mois] = (int)$row['total'];
+            }
+        }
+
+        return $data;
     }
 }

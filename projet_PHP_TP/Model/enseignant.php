@@ -47,23 +47,21 @@ class Enseignant
         return $users;
     }
 
-    public static function ajouterCours($titre, $description, $enseignant_id)
-    {
-        include("../Connexion/connexion.php");
+    public static function getById($id) {
+           include(__DIR__ . "/../Connexion/connexion.php");
+        $stmt = $conn->prepare("SELECT * FROM enseignant WHERE id = :id LIMIT 1");
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
 
-        try {
-            $req = $conn->prepare("
-                INSERT INTO cours (titre, description, enseignant_id)
-                VALUES (:titre, :description, :enseignant_id)
-            ");
-            $req->bindParam(':titre', $titre);
-            $req->bindParam(':description', $description);
-            $req->bindParam(':enseignant_id', $enseignant_id);
-            $req->execute();
+        $enseignant = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            return true;
-        } catch (PDOException $e) {
-            return ['error' => $e->getMessage()];
+        if (!$enseignant) {
+            return null; 
         }
+
+        return $enseignant;
     }
 }
+
+
+

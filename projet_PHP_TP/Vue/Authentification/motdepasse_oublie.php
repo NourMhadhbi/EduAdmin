@@ -21,17 +21,11 @@ if (isset($_SESSION["old_email"])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mot de passe oublié - Plateforme Présence Étudiants</title>
+    <link rel="stylesheet" href="../../Css/global-theme.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../Css/global-theme.css">
     <style>
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2ecc71;
-            --dark-color: #2c3e50;
-            --light-color: #ecf0f1;
-            --danger-color: #e74c3c;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -39,19 +33,33 @@ if (isset($_SESSION["old_email"])) {
         }
 
         body {
-            background: linear-gradient(rgba(114, 114, 114, 0.4), rgba(152, 152, 152, 0.32)),
-                url('../../Assets/edu.jpg') center/cover no-repeat;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('../../Assets/edu.jpg') center/cover no-repeat;
+            opacity: 0.1;
+            z-index: 0;
         }
 
         .login-container {
             max-width: 450px;
             width: 100%;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .login-card {
@@ -67,17 +75,28 @@ if (isset($_SESSION["old_email"])) {
         }
 
         .login-header {
-            background: linear-gradient(135deg, #6a7c96ff, #445876ff);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             padding: 15px 10px;
             text-align: center;
             position: relative;
         }
 
+        .login-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--accent-color);
+        }
+
         .login-header i {
             font-size: 3.5rem;
             margin-bottom: 15px;
             display: block;
+            color: var(--accent-color);
         }
 
         .login-header h2 {
@@ -106,12 +125,28 @@ if (isset($_SESSION["old_email"])) {
 
         .form-control:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+            box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
         }
 
         .btn-login {
-            background: linear-gradient(135deg, #6a7c96ff, #445876ff);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            border: none;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
             padding: 12px;
             border-radius: 8px;
             font-weight: 600;

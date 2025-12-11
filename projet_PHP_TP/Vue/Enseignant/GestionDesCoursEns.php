@@ -1,4 +1,6 @@
 <?php
+include("../../Model/cours.php");
+include("../../Model/presence.php");
 session_start();
 if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
     header("Location: ../Authentification/connexion.php");
@@ -15,6 +17,12 @@ $nom = $_SESSION['nom'] ?? '';
 $prenom = $_SESSION['prenom'] ?? '';
 $email = $_SESSION['email'];
 $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
+$enseignantId = $_SESSION["id"];
+$coursesF = Cours::getCoursByEnseignant($enseignantId);
+$searchCourse  = $_POST['searchCourse']  ?? '';
+$levelFilter   = $_POST['levelFilter']   ?? 'all';
+$titreFilter   = $_POST['titreFilter']   ?? '';
+$courses = Cours::getCoursFiltresByEnseignant($enseignantId, $searchCourse, $levelFilter, $titreFilter);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -23,23 +31,12 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Cours - Espace Enseignant</title>
+    <link rel="stylesheet" href="../../Css/global-theme.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2c3e50;
-            --accent-color: #1abc9c;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-        }
-
+        /* Keeping specific local styles that define course cards, but relying on global theme for layout */
         .course-card {
             border-radius: 12px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
@@ -49,6 +46,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             height: 100%;
             cursor: pointer;
             overflow: hidden;
+            background: white;
         }
 
         .course-card:hover {
@@ -431,762 +429,665 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                 font-size: 1.1rem;
             }
         }
+        /** hedha ili zedou */
+        .scroll-container {
+    position: relative;
+    padding: 10px 40px;
+}
+
+.scroll-btn {
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: #ffffffdd;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.scroll-btn:hover {
+    background: #fff;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.left-btn { left: 0; }
+.right-btn { right: 0; }
+
+.course-list { gap: 20px; }
+    .circle-image {
+            width: 200px;
+            height: 200px;
+            display: none;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto;
+            border: 3px solid #e0e0e0;
+        }
+   .attendance-status {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+        
+        .present {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .absent {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 
 <body>
     <?php include("../NavBar/navbar.php") ?>
 
-    <div class="container-fluid">
+    <div class="container py-4">
         <div class="row">
-
-
-            <main class="px-md-4 py-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center page-header">
-                    <h1 class="h2 fw-bold text-dark">Gestion des cours</h1>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#addCourseModal">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="TableaudeBordEnseignant.php">Accueil</a></li>
+                        <li class="breadcrumb-item active">Gestion des Cours</li>
+                    </ol>
+                </nav>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="page-title mb-0">Gestion des cours</h1>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
                         <i class="fas fa-plus me-2"></i> Nouveau cours
                     </button>
                 </div>
-
-                <!-- Filtres -->
-                <div class="filter-section">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label for="courseFilter" class="form-label">Filtrer par matière</label>
-                            <select class="form-select" id="courseFilter">
-                                <option selected>Toutes les matières</option>
-                                <option>Informatique</option>
-                                <option>Mathématiques</option>
-                                <option>Physique</option>
-                                <option>Chimie</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="statusFilter" class="form-label">Filtrer par statut</label>
-                            <select class="form-select" id="statusFilter">
-                                <option selected>Tous les statuts</option>
-                                <option>Actif</option>
-                                <option>Terminé</option>
-                                <option>À venir</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="searchCourse" class="form-label">Rechercher</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="searchCourse" placeholder="Nom du cours...">
-                                <button class="btn btn-outline-primary" type="button">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Liste des cours -->
-                <div class="row">
-                    <div class="col-xl-4 col-lg-6 mb-4">
-                        <div class="card course-card" data-bs-toggle="modal" data-bs-target="#courseDetailModal"
-                            data-course="web">
-                            <div class="course-header" style="background: linear-gradient(135deg, #3498db, #2980b9);">
-                                <h5 class="card-title fw-bold">Développement Web Avancé</h5>
-                                <p class="card-text mb-0">WEB-2025-A</p>
-                            </div>
-                            <div class="course-body">
-                                <p class="card-text text-muted">Cours avancé sur les technologies web modernes incluant
-                                    les frameworks JavaScript, les API REST, et les bonnes pratiques de développement.
-                                </p>
-                                <div class="course-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-value">35</span>
-                                        <span class="stat-label">Étudiants</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">87%</span>
-                                        <span class="stat-label">Présence</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">7/12</span>
-                                        <span class="stat-label">Séances</span>
-                                    </div>
-                                </div>
-                                <div class="mt-3">
-                                    <span class="badge bg-success">Actif</span>
-                                    <span class="badge bg-secondary ms-1">Informatique</span>
-                                </div>
-                                <div class="d-grid gap-2 mt-3">
-                                    <button class="btn btn-outline-primary btn-course">
-                                        <i class="fas fa-eye me-1"></i> Voir le détail
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-course" data-bs-toggle="modal"
-                                        data-bs-target="#editCourseModal">
-                                        <i class="fas fa-edit me-1"></i> Modifier
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-4 col-lg-6 mb-4">
-                        <div class="card course-card" data-bs-toggle="modal" data-bs-target="#courseDetailModal"
-                            data-course="database">
-                            <div class="course-header" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
-                                <h5 class="card-title fw-bold">Base de Données</h5>
-                                <p class="card-text mb-0">BD-2025-B</p>
-                            </div>
-                            <div class="course-body">
-                                <p class="card-text text-muted">Introduction aux systèmes de gestion de bases de
-                                    données.</p>
-                                <div class="course-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-value">28</span>
-                                        <span class="stat-label">Étudiants</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">92%</span>
-                                        <span class="stat-label">Présence</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">6/10</span>
-                                        <span class="stat-label">Séances</span>
-                                    </div>
-                                </div>
-                                <div class="mt-3">
-                                    <span class="badge bg-success">Actif</span>
-                                    <span class="badge bg-secondary ms-1">Informatique</span>
-                                </div>
-                                <div class="d-grid gap-2 mt-3">
-                                    <button class="btn btn-outline-primary btn-course">
-                                        <i class="fas fa-eye me-1"></i> Voir le détail
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-course" data-bs-toggle="modal"
-                                        data-bs-target="#editCourseModal">
-                                        <i class="fas fa-edit me-1"></i> Modifier
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-4 col-lg-6 mb-4">
-                        <div class="card course-card" data-bs-toggle="modal" data-bs-target="#courseDetailModal"
-                            data-course="algo">
-                            <div class="course-header" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
-                                <h5 class="card-title fw-bold">Algorithmique</h5>
-                                <p class="card-text mb-0">ALGO-2025-C</p>
-                            </div>
-                            <div class="course-body">
-                                <p class="card-text text-muted">Fondements de l'algorithmique et structures de données.
-                                </p>
-                                <div class="course-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-value">32</span>
-                                        <span class="stat-label">Étudiants</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">85%</span>
-                                        <span class="stat-label">Présence</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">5/8</span>
-                                        <span class="stat-label">Séances</span>
-                                    </div>
-                                </div>
-                                <div class="mt-3">
-                                    <span class="badge bg-success">Actif</span>
-                                    <span class="badge bg-secondary ms-1">Informatique</span>
-                                </div>
-                                <div class="d-grid gap-2 mt-3">
-                                    <button class="btn btn-outline-primary btn-course">
-                                        <i class="fas fa-eye me-1"></i> Voir le détail
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-course" data-bs-toggle="modal"
-                                        data-bs-target="#editCourseModal">
-                                        <i class="fas fa-edit me-1"></i> Modifier
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+            </div>
         </div>
-    </div>
 
+             <!-- Filtres -->
+                <form method="POST" id="courseFilterForm">
+                    <div class="filter-section">
+                        <div class="row">
+
+
+                            <!-- Filtre par titre -->
+                            <div class="col-md-4">
+                                <label for="courseFilter" class="form-label">Filtrer par matière</label>
+                                <select class="form-select" id="courseFilter" name="titreFilter" onchange="this.form.submit()">
+                                    <option value="" selected>Toutes les matières</option>
+
+
+                                    <?php foreach ($coursesF as $course): ?>
+                                        <option value="<?= htmlspecialchars($course['titre']) ?>"
+                                            <?= (isset($titreFilter) && $titreFilter == $course['titre']) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($course['titre']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+
+                            <!-- Filtre par niveau -->
+                            <div class="col-md-4">
+                                <label class="form-label">Filtrer par niveau</label>
+                                <select class="form-select" name="levelFilter" onchange="this.form.submit()">
+                                    <option value="all" <?= $levelFilter === 'all' ? 'selected' : '' ?>>Tous</option>
+                                    <option value="debutant" <?= $levelFilter === 'debutant' ? 'selected' : '' ?>>Débutant</option>
+                                    <option value="intermediaire" <?= $levelFilter === 'intermediaire' ? 'selected' : '' ?>>Intermédiaire</option>
+                                    <option value="avance" <?= $levelFilter === 'avance' ? 'selected' : '' ?>>Avancé</option>
+                                </select>
+                            </div>
+
+
+                            <!-- Recherche libre -->
+                            <div class="col-md-4">
+                                <label for="searchCourse" class="form-label">Rechercher</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="searchCourse"
+                                        value="<?= htmlspecialchars($searchCourse) ?>"
+                                        placeholder="Nom du cours...">
+                                    <button class="btn btn-outline-primary" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </form>
+
+ <!-- Boutons de scroll -->
+<div class="scroll-container position-relative">
+
+    <button class="scroll-btn left-btn">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <div class="course-list d-flex" id="courseList" 
+         style="overflow-x: hidden; scroll-behavior: smooth;">
+        
+        <?php foreach ($courses as $course): 
+            $nbEtudiants = Cours::getNbEtudiantsInscrits($course['id']);
+            $tauxPresence = Cours::tauxPresenceCours($course['id']);
+            $nbSeances = Cours::getNbSeances($course['id']);
+            $seances = Cours::getSeancesByCours($course['id']);
+        ?>
+
+        <div class="col-xl-4 col-lg-6 mb-4" style="flex: 0 0 33%; max-width: 33%;">
+            <div class="card course-card" data-bs-toggle="modal" data-bs-target="#courseDetailModal">
+
+                <div class="course-header" 
+                     style="background: linear-gradient(135deg, var(--accent-dark), var(--accent-light));">
+                    <h5 class="card-title fw-bold text-white"><?= htmlspecialchars($course['titre']) ?></h5>
+                </div>
+
+                <div class="course-body">
+                    <p class="card-text text-muted">
+                        <?= htmlspecialchars($course['description']) ?>
+                    </p>
+
+                    <div class="course-stats">
+                        <div class="stat-item">
+                            <span class="stat-value"><?= $nbEtudiants ?></span>
+                            <span class="stat-label">Étudiants</span>
+                        </div>
+
+                        <div class="stat-item">
+                            <span class="stat-value"><?= $tauxPresence ?>%</span>
+                            <span class="stat-label">Présence</span>
+                        </div>
+
+                        <div class="stat-item">
+                            <span class="stat-value"><?= $nbSeances ?></span>
+                            <span class="stat-label">Séances</span>
+                        </div>
+                    </div>
+
+                <div class="mt-3">
+                  <?php
+
+                  $levels = [
+                   'debutant' => ['label' => 'Débutant', 'color' => 'success'],
+                    'intermediaire' => ['label' => 'Intermédiaire', 'color' => 'warning'], 
+                    'avance' => ['label' => 'Avancé', 'color' => 'danger']           
+                     ];
+
+                  $level = $course['level'] ?? '';
+                  $levelLabel = $levels[$level]['label'] ?? 'Niveau inconnu';
+                  $levelColor = $levels[$level]['color'] ?? 'secondary';
+                  ?>
+
+                        <span class="badge bg-<?= $levelColor ?>"><?= $levelLabel ?></span>
+
+                        <span class="badge bg-secondary ms-1"><?= $course['category'] ?></span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <!-- <button class="btn btn-outline-primary btn-course">
+                            <i class="fas fa-eye me-1"></i> Voir le détail
+                        </button> -->
+                          <!-- <button class="btn btn-outline-primary btn-course" 
+                          data-bs-target="#courseDetailModal<?= $course['id'] ?>">
+                    <i class="fas fa-eye me-1"></i> Voir le détail
+                </button> -->
+                   <button class="btn btn-outline-primary btn-course" 
+                   data-bs-toggle="modal" data-bs-target="#courseDetailModal<?= $course['id'] ?>">
+                    <i class="fas fa-eye me-1"></i> Voir le détail
+                </button>
+        <button class="btn btn-outline-secondary btn-course" 
+        data-bs-toggle="modal"
+        data-bs-target="#editCourseModal-<?= $course['id'] ?>">
+    <i class="fas fa-edit me-1"></i> Modifier
+</button>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
     <!-- Modal de détail du cours -->
-    <div class="modal fade course-detail-modal" id="courseDetailModal" tabindex="-1"
-        aria-labelledby="courseDetailModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-course-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4 class="modal-title mb-1 fw-bold" id="courseDetailModalLabel">Développement Web Avancé
-                            </h4>
-                            <p class="mb-0 opacity-75">WEB-2025-A</p>
+  <?php 
+// Supposons que $course soit le cours sélectionné avant d'inclure ce modal
+//$seances = Cours::getSeancesByCours($course['id']);
+$nbEtudiants = Cours::getNbEtudiantsInscrits($course['id']);
+$tauxPresence = Cours::tauxPresenceCours($course['id']);
+?>
+
+<!-- Modal de détail du cours -->
+<div class="modal fade course-detail-modal" id="courseDetailModal<?= $course['id'] ?>" tabindex="-1"
+    aria-labelledby="courseDetailModalLabel<?= $course['id'] ?>" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-course-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="modal-title mb-1 fw-bold" id="courseDetailModalLabel<?= $course['id'] ?>">
+                        <?= htmlspecialchars($course['titre']) ?>
+                    </h4>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+
+                    <!-- Partie gauche -->
+                    <div class="col-md-8">
+                        <h5 class="fw-bold text-dark mb-3">Description du cours</h5>
+                        <p class="text-muted"><?= htmlspecialchars($course['description']) ?></p>
+
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-2">
+                                <strong class="text-dark">Étudiants:</strong><br>
+                                <span class="text-muted"><?= $nbEtudiants ?></span>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <strong class="text-dark">Présence:</strong><br>
+                                <span class="badge bg-success"><?= $tauxPresence ?>%</span>
+                            </div>
                         </div>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
+
+                     <div class="d-flex mb-4">
+                       <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#planSessionModal-<?= $course['id'] ?>">
+                       <i class="fas fa-calendar-plus me-1"></i> Planifier une séance
+                       </button>
+                     </div>
+
+
+                        <h5 class="fw-bold text-dark mb-3">Séances planifiées</h5>
+                        <div class="timeline">
+    <?php foreach ($seances as $index => $seance):  
+        $seanceDebut = strtotime($seance['date'].' '.$seance['heureDebut']);
+        $seanceFin   = strtotime($seance['date'].' '.$seance['heureFin']);
+        $now = time();
+        $presences = Presence::getPresencesBySeance($seance['id']);
+        if ($now < $seanceDebut) {
+            $status = 'upcoming';
+            $badgeColor = 'primary';
+            $badgeText = 'À venir';
+        } elseif ($now >= $seanceDebut && $now <= $seanceFin) {
+            $status = 'ongoing';
+            $badgeColor = 'warning';
+            $badgeText = 'En cours';
+        } else {
+            $status = 'completed';
+            $badgeColor = 'success';
+            $badgeText = 'Terminée';
+        }
+    ?>
+
+        <div class="timeline-item <?= $status ?>">
+            <div class="session-item session-<?= $status ?>">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 fw-bold">Séance <?= $index+1 ?>: <?= htmlspecialchars($seance['titre']) ?></h6>
+                        <p class="mb-1 text-muted"><?= date('d M Y', strtotime($seance['date'])) ?>, <?= htmlspecialchars($seance['heureDebut']) ?> - <?= htmlspecialchars($seance['heureFin']) ?></p>
+                    </div>
+                    <span class="badge bg-<?= $badgeColor ?> ms-2"><?= $badgeText ?></span>
+                </div>
+                <div class="mt-3">
+                    <div class="mt-3">
+                        <?php if ($status == 'upcoming'): ?>
+                            <button class="btn btn-sm btn-outline-primary edit-session-btn" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editSessionModal"
+                                data-session-id="<?= $seance['id'] ?>"
+                                data-date="<?= $seance['date'] ?>"
+                                data-heure-debut="<?= $seance['heureDebut'] ?>"
+                                data-heure-fin="<?= $seance['heureFin'] ?>">
+                                <i class="fas fa-edit me-1"></i> Modifier
+                            </button>
+
+                        <button class="btn btn-sm btn-outline-danger ms-1"
+        data-bs-toggle="modal"
+        data-bs-target="#deleteSessionModal-<?= $seance['id'] ?>">
+    <i class="fas fa-trash me-1"></i> Supprimer
+</button>
+
+<?php else: ?>
+
+<button class="btn btn-sm btn-outline-primary ms-2 btn-view-attendance"
+        data-bs-toggle="modal" 
+        data-bs-target="#viewAttendanceModal-<?= $seance['id'] ?>">
+    <i class="fas fa-eye me-1"></i> Voir présence
+</button>
+
+
+<?php endif; ?>
                     </div>
                 </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Partie droite -->
+                    <div class="col-md-4">
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="mb-0 fw-bold">Statistiques rapides</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Taux de présence moyen:</span>
+                                    <strong class="text-dark"><?= $tauxPresence ?>%</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Séances terminées:</span>
+                                    <strong class="text-dark"><?= count(array_filter($seances, fn($s) => strtotime($s['date'].' '.$s['heureDebut']) <= time())) ?>/<?= count($seances) ?></strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Prochaine séance:</span>
+                                    <?php 
+                                        $upcomingSeance = null; 
+                                        foreach($seances as $s){ 
+                                            if(strtotime($s['date'].' '.$s['heureDebut']) > time()){ 
+                                                $upcomingSeance = $s; 
+                                                break; 
+                                            } 
+                                        } 
+                                    ?>
+                                    <strong class="text-dark"><?= $upcomingSeance ? date('d M', strtotime($upcomingSeance['date'])) : '-' ?></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="mb-0 fw-bold">Actions rapides</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                  <a href="./GestionDesPrésencesEns.php" class="btn btn-outline-primary">
+    <i class="fas fa-users me-1"></i> Gérer les étudiants
+</a>
+
+                                 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal de planification de séance -->
+<div class="modal fade" id="planSessionModal-<?= $course['id'] ?>" tabindex="-1" aria-labelledby="planSessionModalLabel-<?= $course['id'] ?>" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="planSessionModalLabel-<?= $course['id'] ?>">
+                    <i class="fas fa-calendar-plus me-2 text-primary"></i> Planifier une nouvelle séance
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form method="POST" action="../../Controller/seanceController.php">
+                <input type="hidden" name="cours_id" value="<?= $course['id'] ?>">
+                <input type="hidden" name="action" value="ajouterSeance">
                 <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="sessionDate-<?= $course['id'] ?>" class="form-label">Date</label>
+                           <input type="date" class="form-control" id="sessionDate-<?= $course['id'] ?>" name="date" required min="<?= date('Y-m-d') ?>" >
+                        </div>
+                        <div class="col-md-3">
+                            <label for="startTime-<?= $course['id'] ?>" class="form-label">Heure de début</label>
+                            <input type="time" class="form-control" id="startTime-<?= $course['id'] ?>" name="heureDebut" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="endTime-<?= $course['id'] ?>" class="form-label">Heure de fin</label>
+                            <input type="time" class="form-control" id="endTime-<?= $course['id'] ?>" name="heureFin" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Planifier la séance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de modification -->
+<div class="modal fade" id="editCourseModal-<?= $course['id'] ?>" tabindex="-1"
+     aria-labelledby="editCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-edit me-2 text-primary"></i> Modifier le cours
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="../../Controller/CoursController.php"
+                  method="POST" enctype="multipart/form-data">
+
+                <div class="modal-body">
+
+                    <input type="hidden" name="action" value="modifierCours">
+                    <input type="hidden" name="cours_id" value="<?= $course['id'] ?>">
+                    <input type="hidden" name="ancienne_image" value="<?= $course['image'] ?>">
+                    <input type="hidden" name="enseignant_id" value="<?= $_SESSION['id'] ?>">
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nom du cours</label>
+                            <input type="text" name="titre" class="form-control"
+                                   value="<?= htmlspecialchars($course['titre']) ?>" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Niveau</label>
+                            <select name="level" class="form-select">
+                                <option value="debutant" <?= $course['level']=='debutant'?'selected':'' ?>>Débutant</option>
+                                <option value="intermediaire" <?= $course['level']=='intermediaire'?'selected':'' ?>>Intermédiaire</option>
+                                <option value="avance" <?= $course['level']=='avance'?'selected':'' ?>>Avancé</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3"><?= htmlspecialchars($course['description']) ?></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Catégorie</label>
+                        <input type="text" name="category" class="form-control"
+                               value="<?= htmlspecialchars($course['category']) ?>" required>
+                    </div>
+
+                    <!-- Image actuelle -->
+                    <div class="mb-3">
+                        <label class="form-label">Image actuelle :</label>
+                        <div class="p-2 border rounded bg-light text-center">
+                            <?php if (!empty($course['image'])): ?>
+                                <img src="../../Assets/Images/image/<?= htmlspecialchars($course['image']) ?>"
+                                     alt="Image du cours"
+                                     style="width:150px; height:150px; object-fit:cover; border-radius:8px;">
+                            <?php else: ?>
+                                <p class="text-muted">Aucune image disponible.</p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Nouvelle image -->
+                    <div class="mb-3">
+                        <label class="form-label">Choisir une nouvelle image</label>
+                        <input type="file" class="form-control" name="image" id="newImageInput" accept="image/*">
+                    </div>
+<img id="newImagePreview" 
+    class="circle-image"
+     style="max-height: 250px; object-fit: cover;">
+  
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+<!-- UN SEUL MODAL en dehors de toute boucle -->
+<div class="modal fade" id="editSessionModal" tabindex="-1" aria-labelledby="editSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="../../Controller/SeanceController.php">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-edit me-2 text-primary"></i> Modifier la séance
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="modifierSeance">
+                    <input type="hidden" name="seance_id" id="editSessionId">
+                    <input type="hidden" name="cours_id" value="<?= $course['id'] ?>">
+
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="date" name="date" id="editSessionDate" class="form-control" required>
+                    </div>
+
                     <div class="row">
-                        <div class="col-md-8">
-                            <h5 class="fw-bold text-dark mb-3">Description du cours</h5>
-                            <p class="text-muted">Cours avancé sur les technologies web modernes incluant les frameworks
-                                JavaScript, les API REST, et les bonnes pratiques de développement.</p>
-
-                            <div class="row mb-4">
-                                <div class="col-md-3 mb-2">
-                                    <strong class="text-dark">Code:</strong><br>
-                                    <span class="text-muted">WEB-2025-A</span>
-                                </div>
-                                <div class="col-md-3 mb-2">
-                                    <strong class="text-dark">Crédits:</strong><br>
-                                    <span class="text-muted">5</span>
-                                </div>
-                                <div class="col-md-3 mb-2">
-                                    <strong class="text-dark">Étudiants:</strong><br>
-                                    <span class="text-muted">35</span>
-                                </div>
-                                <div class="col-md-3 mb-2">
-                                    <strong class="text-dark">Présence:</strong><br>
-                                    <span class="badge bg-success">87%</span>
-                                </div>
-                            </div>
-
-                            <div class="d-flex mb-4">
-                                <button class="btn btn-primary me-2" data-bs-toggle="modal"
-                                    data-bs-target="#planSessionModal">
-                                    <i class="fas fa-calendar-plus me-1"></i> Planifier une séance
-                                </button>
-                                <button class="btn btn-outline-primary" data-bs-toggle="modal"
-                                    data-bs-target="#editCourseModal">
-                                    <i class="fas fa-edit me-1"></i> Modifier le cours
-                                </button>
-                            </div>
-
-                            <h5 class="fw-bold text-dark mb-3">Séances planifiées</h5>
-                            <div class="timeline">
-                                <div class="timeline-item upcoming">
-                                    <div class="session-item session-upcoming">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1 fw-bold">Séance 8: Frameworks Frontend</h6>
-                                                <p class="mb-1 text-muted">13 Oct. 2025, 14:00 - 16:00</p>
-                                                <small class="text-muted"><i
-                                                        class="fas fa-map-marker-alt me-1"></i>Salle 302 |
-                                                    Présentiel</small>
-                                            </div>
-                                            <span class="badge bg-primary ms-2">À venir</span>
-                                        </div>
-                                        <div class="mt-3">
-                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                                                data-bs-target="#editSessionModal">
-                                                <i class="fas fa-edit me-1"></i> Modifier
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger ms-1" data-bs-toggle="modal"
-                                                data-bs-target="#deleteSessionModal">
-                                                <i class="fas fa-trash me-1"></i> Supprimer
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="timeline-item">
-                                    <div class="session-item session-completed">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1 fw-bold">Séance 7: API REST avancées</h6>
-                                                <p class="mb-1 text-muted">10 Oct. 2025, 14:00 - 16:00</p>
-                                                <small class="text-muted"><i
-                                                        class="fas fa-map-marker-alt me-1"></i>Salle 302 |
-                                                    Présentiel</small>
-                                            </div>
-                                            <span class="badge bg-success ms-2">Terminée</span>
-                                        </div>
-                                        <div class="mt-3">
-                                            <span class="badge bg-light text-dark"><i class="fas fa-users me-1"></i>
-                                                32/35 présents</span>
-                                            <button class="btn btn-sm btn-outline-primary ms-2" data-bs-toggle="modal"
-                                                data-bs-target="#viewAttendanceModal">
-                                                <i class="fas fa-eye me-1"></i> Voir présence
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="timeline-item">
-                                    <div class="session-item session-completed">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1 fw-bold">Séance 6: Authentification et sécurité</h6>
-                                                <p class="mb-1 text-muted">03 Oct. 2025, 14:00 - 16:00</p>
-                                                <small class="text-muted"><i class="fas fa-video me-1"></i>En ligne |
-                                                    Teams</small>
-                                            </div>
-                                            <span class="badge bg-success ms-2">Terminée</span>
-                                        </div>
-                                        <div class="mt-3">
-                                            <span class="badge bg-light text-dark"><i class="fas fa-users me-1"></i>
-                                                30/35 présents</span>
-                                            <button class="btn btn-sm btn-outline-primary ms-2" data-bs-toggle="modal"
-                                                data-bs-target="#viewAttendanceModal">
-                                                <i class="fas fa-eye me-1"></i> Voir présence
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Heure début</label>
+                            <input type="time" name="heureDebut" id="editSessionHeureDebut" class="form-control" required>
                         </div>
-
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0 fw-bold">Informations du cours</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <strong class="text-dark">Période:</strong><br>
-                                        <span class="text-muted">01 Sep. 2025 - 20 Dec. 2025</span>
-                                    </div>
-                                    <div class="mb-3">
-                                        <strong class="text-dark">Jour de cours:</strong><br>
-                                        <span class="text-muted">Lundi et Jeudi</span>
-                                    </div>
-                                    <div class="mb-3">
-                                        <strong class="text-dark">Heure:</strong><br>
-                                        <span class="text-muted">14:00 - 16:00</span>
-                                    </div>
-                                    <div class="mb-3">
-                                        <strong class="text-dark">Salle:</strong><br>
-                                        <span class="text-muted">302 (Bâtiment Principal)</span>
-                                    </div>
-                                    <div class="mb-0">
-                                        <strong class="text-dark">Enseignant:</strong><br>
-                                        <span class="text-muted">Prof. Martin Dupont</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card mt-3">
-                                <div class="card-header">
-                                    <h5 class="mb-0 fw-bold">Statistiques rapides</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Taux de présence moyen:</span>
-                                        <strong class="text-dark">87%</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Séances terminées:</span>
-                                        <strong class="text-dark">7/12</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Prochaine séance:</span>
-                                        <strong class="text-dark">13 Oct.</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Étudiants à risque:</span>
-                                        <strong class="text-danger">3</strong>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card mt-3">
-                                <div class="card-header">
-                                    <h5 class="mb-0 fw-bold">Actions rapides</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-outline-primary">
-                                            <i class="fas fa-users me-1"></i> Gérer les étudiants
-                                        </button>
-                                        <button class="btn btn-outline-primary">
-                                            <i class="fas fa-file-export me-1"></i> Exporter les présences
-                                        </button>
-                                        <button class="btn btn-outline-primary">
-                                            <i class="fas fa-chart-bar me-1"></i> Voir les statistiques
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Heure fin</label>
+                            <input type="time" name="heureFin" id="editSessionHeureFin" class="form-control" required>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal d'ajout de cours -->
-    <div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="addCourseModalLabel">
-                        <i class="fas fa-plus-circle me-2 text-primary"></i>Créer un nouveau cours
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="courseName" class="form-label">Nom du cours</label>
-                                <input type="text" class="form-control" id="courseName"
-                                    placeholder="Ex: Développement Web Avancé" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="courseCode" class="form-label">Code du cours</label>
-                                <input type="text" class="form-control" id="courseCode" placeholder="Ex: WEB-2025-A"
-                                    required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="courseDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="courseDescription" rows="3"
-                                placeholder="Description détaillée du cours..."></textarea>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="courseSubject" class="form-label">Matière</label>
-                                <select class="form-select" id="courseSubject" required>
-                                    <option selected disabled>Sélectionnez une matière</option>
-                                    <option>Informatique</option>
-                                    <option>Mathématiques</option>
-                                    <option>Physique</option>
-                                    <option>Chimie</option>
-                                    <option>Biologie</option>
-                                    <option>Histoire</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="courseCredits" class="form-label">Crédits</label>
-                                <input type="number" class="form-control" id="courseCredits" min="1" max="10" value="3">
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="startDate" class="form-label">Date de début</label>
-                                <input type="date" class="form-control" id="startDate" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="endDate" class="form-label">Date de fin</label>
-                                <input type="date" class="form-control" id="endDate" required>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="courseDays" class="form-label">Jours de cours</label>
-                                <select class="form-select" id="courseDays" multiple>
-                                    <option value="lundi">Lundi</option>
-                                    <option value="mardi">Mardi</option>
-                                    <option value="mercredi">Mercredi</option>
-                                    <option value="jeudi">Jeudi</option>
-                                    <option value="vendredi">Vendredi</option>
-                                </select>
-                                <small class="text-muted">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs
-                                    jours</small>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="courseTime" class="form-label">Heure du cours</label>
-                                <div class="input-group">
-                                    <input type="time" class="form-control" id="courseStartTime">
-                                    <span class="input-group-text">à</span>
-                                    <input type="time" class="form-control" id="courseEndTime">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="courseLocation" class="form-label">Lieu/Salle</label>
-                            <input type="text" class="form-control" id="courseLocation"
-                                placeholder="Ex: Salle 302, Bâtiment Principal">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary">Créer le cours</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
+</div>
+<?php foreach ($seances as $index => $seance):   ?>
+<div class="modal fade" id="deleteSessionModal-<?= $seance['id'] ?>" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
 
-    <!-- Modal de modification de cours -->
-    <div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="editCourseModalLabel">
-                        <i class="fas fa-edit me-2 text-primary"></i>Modifier le cours
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="editCourseName" class="form-label">Nom du cours</label>
-                                <input type="text" class="form-control" id="editCourseName"
-                                    value="Développement Web Avancé" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="editCourseCode" class="form-label">Code du cours</label>
-                                <input type="text" class="form-control" id="editCourseCode" value="WEB-2025-A" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editCourseDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="editCourseDescription"
-                                rows="3">Cours avancé sur les technologies web modernes incluant les frameworks JavaScript, les API REST, et les bonnes pratiques de développement.</textarea>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="editCourseSubject" class="form-label">Matière</label>
-                                <select class="form-select" id="editCourseSubject" required>
-                                    <option>Informatique</option>
-                                    <option>Mathématiques</option>
-                                    <option>Physique</option>
-                                    <option>Chimie</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="editCourseCredits" class="form-label">Crédits</label>
-                                <input type="number" class="form-control" id="editCourseCredits" min="1" max="10"
-                                    value="5">
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="editStartDate" class="form-label">Date de début</label>
-                                <input type="date" class="form-control" id="editStartDate" value="2025-09-01" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="editEndDate" class="form-label">Date de fin</label>
-                                <input type="date" class="form-control" id="editEndDate" value="2025-12-20" required>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="editCourseDays" class="form-label">Jours de cours</label>
-                                <select class="form-select" id="editCourseDays" multiple>
-                                    <option value="lundi" selected>Lundi</option>
-                                    <option value="mardi">Mardi</option>
-                                    <option value="mercredi">Mercredi</option>
-                                    <option value="jeudi" selected>Jeudi</option>
-                                    <option value="vendredi">Vendredi</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="editCourseTime" class="form-label">Heure du cours</label>
-                                <div class="input-group">
-                                    <input type="time" class="form-control" id="editCourseStartTime" value="14:00">
-                                    <span class="input-group-text">à</span>
-                                    <input type="time" class="form-control" id="editCourseEndTime" value="16:00">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editCourseLocation" class="form-label">Lieu/Salle</label>
-                            <input type="text" class="form-control" id="editCourseLocation"
-                                value="Salle 302, Bâtiment Principal">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary">Enregistrer les modifications</button>
-                </div>
-            </div>
-        </div>
-    </div>
+            <form method="POST" action="../../Controller/SeanceController.php">
 
-    <!-- Modal de planification de séance -->
-    <div class="modal fade" id="planSessionModal" tabindex="-1" aria-labelledby="planSessionModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="planSessionModalLabel">
-                        <i class="fas fa-calendar-plus me-2 text-primary"></i>Planifier une nouvelle séance
+                    <h5 class="modal-title fw-bold text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Confirmation de suppression
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="sessionTitle" class="form-label">Titre de la séance</label>
-                            <input type="text" class="form-control" id="sessionTitle"
-                                placeholder="Ex: Introduction à React" required>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="sessionDate" class="form-label">Date</label>
-                                <input type="date" class="form-control" id="sessionDate" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="startTime" class="form-label">Heure de début</label>
-                                <input type="time" class="form-control" id="startTime" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="endTime" class="form-label">Heure de fin</label>
-                                <input type="time" class="form-control" id="endTime" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="sessionType" class="form-label">Type de séance</label>
-                            <select class="form-select" id="sessionType" required>
-                                <option value="presentiel">Présentiel</option>
-                                <option value="en-ligne">En ligne</option>
-                                <option value="hybride">Hybride</option>
-                            </select>
-                        </div>
-                        <div class="mb-3" id="locationField">
-                            <label for="sessionLocation" class="form-label">Lieu/Salle</label>
-                            <input type="text" class="form-control" id="sessionLocation"
-                                placeholder="Ex: Salle 302 ou Lien Teams">
-                        </div>
-                        <div class="mb-3">
-                            <label for="sessionDescription" class="form-label">Description (optionnel)</label>
-                            <textarea class="form-control" id="sessionDescription" rows="3"
-                                placeholder="Objectifs de la séance..."></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="sessionMaterials" class="form-label">Documents et ressources</label>
-                            <input type="file" class="form-control" id="sessionMaterials" multiple>
-                            <small class="text-muted">Vous pouvez ajouter plusieurs fichiers (PDF, PowerPoint,
-                                etc.)</small>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary">Planifier la séance</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal de modification de séance -->
-    <div class="modal fade" id="editSessionModal" tabindex="-1" aria-labelledby="editSessionModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="editSessionModalLabel">
-                        <i class="fas fa-edit me-2 text-primary"></i>Modifier la séance
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="editSessionTitle" class="form-label">Titre de la séance</label>
-                            <input type="text" class="form-control" id="editSessionTitle"
-                                value="Séance 8: Frameworks Frontend" required>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="editSessionDate" class="form-label">Date</label>
-                                <input type="date" class="form-control" id="editSessionDate" value="2025-10-13"
-                                    required>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="editStartTime" class="form-label">Heure de début</label>
-                                <input type="time" class="form-control" id="editStartTime" value="14:00" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="editEndTime" class="form-label">Heure de fin</label>
-                                <input type="time" class="form-control" id="editEndTime" value="16:00" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editSessionType" class="form-label">Type de séance</label>
-                            <select class="form-select" id="editSessionType" required>
-                                <option value="presentiel" selected>Présentiel</option>
-                                <option value="en-ligne">En ligne</option>
-                                <option value="hybride">Hybride</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editSessionLocation" class="form-label">Lieu/Salle</label>
-                            <input type="text" class="form-control" id="editSessionLocation" value="Salle 302">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editSessionDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="editSessionDescription"
-                                rows="3">Introduction aux frameworks frontend modernes : React, Vue.js et Angular.</textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary">Enregistrer les modifications</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de confirmation de suppression -->
-    <div class="modal fade" id="deleteSessionModal" tabindex="-1" aria-labelledby="deleteSessionModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold text-danger" id="deleteSessionModalLabel">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Confirmation de suppression
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
                 <div class="modal-body text-center">
-                    <div class="mb-4">
-                        <i class="fas fa-trash-alt fa-3x text-danger mb-3"></i>
-                        <h5 class="fw-bold">Êtes-vous sûr de vouloir supprimer cette séance ?</h5>
-                        <p class="text-muted">Cette action est irréversible. Toutes les données de présence associées à
-                            cette séance seront également supprimées.</p>
-                    </div>
+                    <i class="fas fa-trash-alt fa-3x text-danger mb-3"></i>
+
+                    <h5 class="fw-bold">Supprimer cette séance ?</h5>
+
+                    <p class="text-muted">
+                        Cette action est irréversible. Toutes les présences associées seront supprimées.
+                    </p>
+
                     <div class="alert alert-warning">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>Séance à supprimer :</strong> Séance 8: Frameworks Frontend (13 Oct. 2025)
+                        <strong>Séance :</strong> 
+                        <?= htmlspecialchars($s['titre']) ?> 
+                        (<?= date('d M Y', strtotime($s['date'])) ?>)
                     </div>
                 </div>
+
                 <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-danger">Supprimer définitivement</button>
+                    <input type="hidden" name="action" value="supprimerSeance">
+                    <input type="hidden" name="seance_id" value="<?= $s['id'] ?>">
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Annuler
+                    </button>
+
+                    <button type="submit" class="btn btn-danger">
+                        Supprimer définitivement
+                    </button>
                 </div>
-            </div>
+
+            </form>
+
         </div>
     </div>
-
-    <!-- Modal de visualisation des présences -->
-    <div class="modal fade" id="viewAttendanceModal" tabindex="-1" aria-labelledby="viewAttendanceModalLabel"
+</div>
+<div class="modal fade" id="viewAttendanceModal-<?= $seance['id'] ?>" tabindex="-1" aria-labelledby="viewAttendanceModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="viewAttendanceModalLabel">
-                        <i class="fas fa-users me-2 text-primary"></i>Présences - Séance 7: API REST avancées
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <p class="mb-1 text-muted"><i class="fas fa-calendar me-1"></i>10 Oct. 2025, 14:00 - 16:00
-                            </p>
-                            <p class="mb-0 text-muted"><i class="fas fa-map-marker-alt me-1"></i>Salle 302 | Présentiel
-                            </p>
-                        </div>
-                        <div class="text-end">
-                            <h5 class="mb-1">32/35 présents</h5>
-                            <span class="badge bg-success">91% de présence</span>
-                        </div>
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="viewAttendanceModalLabel">
+                    <i class="fas fa-users me-2 text-primary"></i>
+                    Présences - Séance <?= $index+1 ?> : <?= htmlspecialchars($seance['titre']) ?>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Informations de la séance -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <p class="mb-1 text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            <?= date('d M Y', strtotime($seance['date'])) ?>,
+                            <?= $seance['heureDebut'] ?> - <?= $seance['heureFin'] ?>
+                        </p>
                     </div>
+
+                    <div class="text-end">
+                        <?php
+                            $total = count($presences);
+                            $presentCount = array_sum(array_map(fn($p) => $p['statut'] == 'present' ? 1 : 0, $presences));
+                            $percentage = $total > 0 ? round(($presentCount / $total) * 100) : 0;
+                        ?>
+                        <h5 class="mb-1"><?= $presentCount ?>/<?= $total ?> présents</h5>
+                        <span class="badge bg-success"><?= $percentage ?>% de présence</span>
+                    </div>
+                </div>
+
+                <!-- Tableau des présences -->
+                <form action="../../Controller/presenceController.php" method="POST">
+                    <input type="hidden" name="action" value="updatePresence">
+                    <input type="hidden" name="seance_id" value="<?= $seance['id'] ?>">
 
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -1196,152 +1097,277 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                                     <th>Matricule</th>
                                     <th>Statut</th>
                                     <th>Heure d'arrivée</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
+
                             <tbody>
+                                <?php foreach ($presences as $p): ?>
                                 <tr>
+
+                                    <!-- Étudiant : photo + nom + email -->
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="https://via.placeholder.com/40" class="rounded-circle me-3"
-                                                alt="Avatar">
+                                            <img src="../../Assets/Images/image/<?= $p['photoProfil'] ?>"
+                                                 class="rounded-circle me-3" width="40" height="40">
                                             <div>
-                                                <strong>Thomas Leroy</strong>
-                                                <div class="text-muted small">thomas.leroy@etudiant.univ.fr</div>
+                                                <strong><?= $p['etudiant_nom'] . " " . $p['etudiant_prenom'] ?></strong>
+                                                <div class="text-muted small"><?= $p['email'] ?></div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>ET2025001</td>
-                                    <td><span class="presence-status presence-present">Présent</span></td>
-                                    <td>13:58</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
+
+                                    <!-- Matricule -->
+                                    <td><?= $p['etudiant_matricule'] ?></td>
+
+                                    <!-- Statut (modifiable sans JS) -->
+                                    <!-- <td>
+                                        <select name="statut[<?= $p['id'] ?>]" class="form-select form-select-sm w-auto">
+                                            <option value="present" <?= $p['statut']=="present" ? "selected" : "" ?>>
+                                                Présent
+                                            </option>
+                                            <option value="absent" <?= $p['statut']=="absent" ? "selected" : "" ?>>
+                                                Absent
+                                            </option>
+                                        </select>
+                                        </td> -->
+                            <td >
+
+    <div class="attendance-status <?= ($p['statut']=="Présent" ? "present" : "absent") ?>"
+         data-etudiant="<?= $p['etudiant_id'] ?>"
+         data-seance="<?= $p['seance_id'] ?>"
+         title="<?= $p['statut'] ?>">
+        <?= $p['statut']=="Présent" ? "P" : "A" ?>
+    </div>
+    <input type="hidden"
+        name="status[<?= $p['etudiant_id'] ?>][<?= $p['seance_id'] ?>]"
+        value="<?= $p['statut'] ?>"
+        class="status-input">
+        <input type="hidden" name="save2">
+</td>
+
+
+                                    
+
+                                    <!-- Heure d'arrivée -->
+                                    <td><?= $p['HeureArrivee'] ? date('H:i', strtotime($p['HeureArrivee'])) : '-' ?></td>
+
                                 </tr>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="https://via.placeholder.com/40" class="rounded-circle me-3"
-                                                alt="Avatar">
-                                            <div>
-                                                <strong>Marie Petit</strong>
-                                                <div class="text-muted small">marie.petit@etudiant.univ.fr</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>ET2025002</td>
-                                    <td><span class="presence-status presence-present">Présent</span></td>
-                                    <td>14:02</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="https://via.placeholder.com/40" class="rounded-circle me-3"
-                                                alt="Avatar">
-                                            <div>
-                                                <strong>Jean Moreau</strong>
-                                                <div class="text-muted small">jean.moreau@etudiant.univ.fr</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>ET2025003</td>
-                                    <td><span class="presence-status presence-late">En retard</span></td>
-                                    <td>14:15</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="https://via.placeholder.com/40" class="rounded-circle me-3"
-                                                alt="Avatar">
-                                            <div>
-                                                <strong>Sophie Martin</strong>
-                                                <div class="text-muted small">sophie.martin@etudiant.univ.fr</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>ET2025004</td>
-                                    <td><span class="presence-status presence-absent">Absent</span></td>
-                                    <td>-</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
 
+                    <!-- Bouton d'enregistrement -->
                     <div class="d-flex justify-content-between align-items-center mt-4">
-                        <div>
-                            <button class="btn btn-outline-primary">
-                                <i class="fas fa-file-export me-1"></i> Exporter en PDF
-                            </button>
-                            <button class="btn btn-outline-primary ms-2">
-                                <i class="fas fa-file-excel me-1"></i> Exporter en Excel
-                            </button>
-                        </div>
-                        <button class="btn btn-primary">
+                        <div></div>
+                        <button class="btn btn-primary" name="save">
                             <i class="fas fa-save me-1"></i> Enregistrer les modifications
                         </button>
                     </div>
-                </div>
+                </form>
+
             </div>
         </div>
     </div>
+</div>
+<?php endforeach; ?>
+
+        <?php endforeach; ?>
+
+    </div>
+
+    <button class="scroll-btn right-btn">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+
+</div>
+   <!-- Modal Ajout de Cours -->
+<!-- Modal Ajout de Cours -->
+<div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+
+            <div class="modal-header bg-primary text-white rounded-top-4">
+                <h5 class="modal-title fw-bold" id="addCourseModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Créer un nouveau cours
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="../../Controller/CoursController.php"
+                  method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="ajouterCours">
+                <div class="modal-body">
+
+                    <!-- Titre -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Titre du cours <span class="text-danger">*</span></label>
+                        <input type="text" name="titre" class="form-control form-control-lg" placeholder="Ex : Développement Web" required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Brève description du cours..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <!-- Level -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Niveau</label>
+                            <select name="level" class="form-select" required>
+                                <option disabled selected>Choisir...</option>
+                                <option value="debutant">Débutant</option>
+                                <option value="intermediaire">Intermédiaire</option>
+                                <option value="avance">Avancé</option>
+                            </select>
+                        </div>
+
+                        <!-- Catégorie -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Catégorie</label>
+                            <input type="text" name="category" class="form-control" placeholder="Ex : Informatique, Gestion...">
+                        </div>
+                    </div>
+
+                    <!-- Upload + Preview -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Image du cours</label>
+                        <input type="file" name="image" class="form-control" id="imageInput"
+                               accept="image/*">
+
+                        <!-- Zone de prévisualisation -->
+                        <div class="mt-3 text-center">
+                            <img id="previewImage" 
+                                 src="" 
+                                 alt="Aperçu de l'image"
+                                 class="circle-image"
+                                 style="max-height: 250px; object-fit: cover;">
+                        </div>
+                    </div>
+
+                    <!-- ID Enseignant -->
+                    <input type="hidden" name="enseignant_id" value="<?= $_SESSION['id'] ?? '' ?>">
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-check me-1"></i>Ajouter
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+
+</div><!-- End Main Container -->
     <?php include("../../Footer/footer.php") ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Gestion de l'affichage du champ lieu en fonction du type de séance
-        document.getElementById('sessionType').addEventListener('change', function() {
-            const locationField = document.getElementById('locationField');
-            const locationInput = document.getElementById('sessionLocation');
+        document.addEventListener('DOMContentLoaded', () => {
+            <?php if (isset($_SESSION["success"])): ?>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Succès',
+                    text: '<?= addslashes($_SESSION["success"]) ?>',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            <?php unset($_SESSION["success"]);
+            endif; ?>
 
-            if (this.value === 'presentiel') {
-                locationInput.placeholder = 'Ex: Salle 302';
-            } else if (this.value === 'en-ligne') {
-                locationInput.placeholder = 'Ex: Lien de la visioconférence';
+            <?php if (isset($_SESSION["error"])): ?>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: '<?= addslashes($_SESSION["error"]) ?>'
+                });
+            <?php unset($_SESSION["error"]);
+            endif; ?>
+        });
+        document.querySelector(".left-btn").addEventListener("click", () => {
+    document.getElementById("courseList").scrollLeft -= 350;
+});
+
+document.querySelector(".right-btn").addEventListener("click", () => {
+    document.getElementById("courseList").scrollLeft += 350;
+});
+    document.getElementById("imageInput").addEventListener("change", function() {
+    const file = this.files[0];
+    const preview = document.getElementById("previewImage");
+
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+    }
+});
+document.getElementById("newImageInput").addEventListener("change", function() {
+    const file = this.files[0];
+    const preview = document.getElementById("newImagePreview");
+
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+    }
+});
+// JavaScript pour charger les données dans le modal
+document.addEventListener('DOMContentLoaded', function() {
+    const editButtons = document.querySelectorAll('.edit-session-btn');
+    
+    editButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Récupérer les données depuis les attributs data
+            const sessionId = this.getAttribute('data-session-id');
+            const date = this.getAttribute('data-date');
+            const heureDebut = this.getAttribute('data-heure-debut');
+            const heureFin = this.getAttribute('data-heure-fin');
+            
+            // Remplir le modal avec les données
+            document.getElementById('editSessionId').value = sessionId;
+            document.getElementById('editSessionDate').value = date;
+            document.getElementById('editSessionHeureDebut').value = heureDebut;
+            document.getElementById('editSessionHeureFin').value = heureFin;
+        });
+    });
+}); 
+document.addEventListener('DOMContentLoaded', function() {
+
+    const statusElements = document.querySelectorAll('.attendance-status');
+
+    statusElements.forEach(element => {
+        element.addEventListener('click', function() {
+
+            let input = this.parentElement.querySelector('.status-input');
+
+            if (input.value === "Présent") {
+
+                this.classList.remove('present');
+                this.classList.add('absent');
+                this.textContent = "A";
+                this.title = "Absent";
+
+                input.value = "Absent";
+
             } else {
-                locationInput.placeholder = 'Ex: Salle 302 + Lien de visio';
+
+                this.classList.remove('absent');
+                this.classList.add('present');
+                this.textContent = "P";
+                this.title = "Présent";
+
+                input.value = "Présent";
             }
         });
+    });
+});
 
-        // Gestion du clic sur les cartes de cours
-        document.querySelectorAll('.course-card').forEach(card => {
-            card.addEventListener('click', function(e) {
-                // Empêcher l'ouverture du modal si on clique sur les boutons
-                if (!e.target.closest('.btn-course')) {
-                    const courseType = this.getAttribute('data-course');
-                    // Ici vous pouvez charger des données spécifiques au cours si nécessaire
-                    console.log('Ouverture du cours:', courseType);
-                }
-            });
-        });
-
-        // Empêcher la propagation du clic sur les boutons
-        document.querySelectorAll('.btn-course').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-        });
-
-        // Définir la date d'aujourd'hui comme date minimale pour les champs de date
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('sessionDate').min = today;
-        document.getElementById('startDate').min = today;
     </script>
+    
 </body>
 
 </html>

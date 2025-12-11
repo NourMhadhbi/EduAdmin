@@ -5,7 +5,7 @@ class VerifyModel
     {
         // Dossier pour stocker l’image temporaire (uploadée)
 
-        $uploadDir = __DIR__ . '/../../projet_PHP_TP/Assets/Images/probe/';
+        $uploadDir = __DIR__ . '/../Assets/Images/probe/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
         // if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
@@ -34,9 +34,9 @@ class VerifyModel
             }
         }
 
-        // Chemin vers Python et script DeepFace
-        $pythonPath = "C:\\Users\\pc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe";
-        $scriptPath = __DIR__ . '/../../projet_PHP_TP/python/check_face.py';
+        // Chemin vers Python - Auto-détection intelligente
+        $pythonPath = $this->getPythonPath();
+        $scriptPath = __DIR__ . '/../python/check_face.py';
 
 
         $command = "\"$pythonPath\" \"$scriptPath\" \"$path\" 2>&1"; // redirige stderr vers stdout
@@ -63,5 +63,65 @@ class VerifyModel
         }
 
         return $jsonLine;
+    }
+
+    /**
+     * Auto-détecte le chemin Python de manière intelligente
+     * Vérifie dans l'ordre : variable d'environnement, PATH système, emplacements communs
+     */
+    private function getPythonPath()
+    {
+        // 1. Vérifier la variable d'environnement PYTHON_PATH
+        $envPath = getenv('PYTHON_PATH');
+        if ($envPath && file_exists($envPath)) {
+            return $envPath;
+        }
+
+        // 2. Essayer de trouver Python dans le PATH système
+        if (stripos(PHP_OS, 'WIN') === 0) {
+            // Windows
+            $output = shell_exec('where python 2>nul');
+            if ($output) {
+                $paths = explode("\n", trim($output));
+                foreach ($paths as $path) {
+                    $path = trim($path);
+                    if (file_exists($path)) {
+                        return $path;
+                    }
+                }
+            }
+
+            // 3. Emplacements communs Windows
+            $commonPaths = [
+                'C:\\Python313\\python.exe',
+                'C:\\Python312\\python.exe',
+                'C:\\Python311\\python.exe',
+                'C:\\Python310\\python.exe',
+                getenv('LOCALAPPDATA') . '\\Programs\\Python\\Python313\\python.exe',
+                getenv('LOCALAPPDATA') . '\\Programs\\Python\\Python312\\python.exe',
+                getenv('LOCALAPPDATA') . '\\Programs\\Python\\Python311\\python.exe',
+            ];
+
+            foreach ($commonPaths as $path) {
+                if ($path && file_exists($path)) {
+                    return $path;
+                }
+            }
+
+            // Fallback Windows
+            return 'python';
+        } else {
+            // Linux/Mac
+            $output = shell_exec('which python3 2>/dev/null');
+            if ($output) {
+                $path = trim($output);
+                if (file_exists($path)) {
+                    return $path;
+                }
+            }
+
+            // Fallback Unix
+            return 'python3';
+        }
     }
 }

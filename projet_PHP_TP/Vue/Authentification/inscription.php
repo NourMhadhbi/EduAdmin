@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 
 $errors = $_SESSION['error'] ?? [];
@@ -17,6 +17,7 @@ unset($_SESSION['error'], $_SESSION['success'], $_SESSION['redirect'], $_SESSION
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inscription - Plateforme Présence Étudiants</title>
+    <link rel="stylesheet" href="../../Css/global-theme.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -73,7 +74,7 @@ unset($_SESSION['error'], $_SESSION['success'], $_SESSION['redirect'], $_SESSION
     <div class="register-container">
         <div class="register-card">
             <div class="register-header">
-                <i class="fas fa-user-plus"></i>
+                <i class="fas fa-user-plus text-white"></i>
                 <h2>Créer un compte</h2>
                 <p class="mb-0">Rejoignez notre plateforme</p>
             </div>

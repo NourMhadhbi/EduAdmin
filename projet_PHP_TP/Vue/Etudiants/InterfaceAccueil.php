@@ -59,320 +59,33 @@ $stats = Presence::getStatsByEtudiant($idEtudiant);
     <title>Tableau de Bord - Espace Étudiant</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+    <!-- Global Theme -->
+    <link rel="stylesheet" href="../../Css/global-theme.css" />
     <link rel="stylesheet" href="../../Css/accueilEtudiant.css" />
     <style>
-        :root {
-            --primary-color: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary-color: #2b2d42;
-            --accent-color: #06d6a0;
-            --accent-dark: #05c391;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --success-color: #06d6a0;
-            --warning-color: #ffd166;
-            --danger-color: #ef476f;
-            --gray-light: #e9ecef;
-            --gray-medium: #adb5bd;
-            --border-radius: 12px;
-            --box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', 'Inter', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-            color: var(--dark-color);
-            line-height: 1.5;
-            min-height: 100vh;
-            font-size: 0.9rem;
-        }
-
-
-
-        /* Styles pour le reste de la page */
-        .page-title {
-            font-weight: 700;
-            color: var(--secondary-color);
-            margin-bottom: 1.5rem;
-            position: relative;
-            padding-bottom: 10px;
-            font-size: 1.8rem;
-        }
-
-        .page-title:after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 4px;
-            /* background: linear-gradient(to right, var(--primary-color), var(--accent-color)); */
-            background-color: rgba(2, 33, 83, 0.9);
-
-            border-radius: 2px;
-        }
-
         .card {
-            border: none;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            transition: var(--transition);
-            overflow: hidden;
-            margin-bottom: 1.2rem;
-            background: white;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            /* background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); */
-            background-color: rgba(2, 33, 83, 0.9);
-            ;
-            color: white;
-            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
-            font-weight: 600;
-            padding: 1rem 1.2rem;
-            border: none;
-            display: flex;
-            align-items: center;
-            font-size: 0.95rem;
-        }
-
-        .card-header i {
-            margin-right: 8px;
-            font-size: 1rem;
-        }
-
-        .card-body {
-            padding: 1.2rem;
-        }
-
-        .stats-overview {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem;
             margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 1.2rem;
-            box-shadow: var(--box-shadow);
-            text-align: center;
-            transition: var(--transition);
-            border-left: 3px solid var(--primary-color);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card.present {
-            border-left-color: var(--success-color);
-        }
-
-        .stat-card.absent {
-            border-left-color: var(--danger-color);
-        }
-
-        .stat-card.rate {
-            border-left-color: var(--primary-color);
-        }
-
-        .stat-card.courses {
-            border-left-color: var(--accent-color);
-        }
-
-        .stat-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 0.8rem;
-            font-size: 1.2rem;
-        }
-
-        .stat-card.present .stat-icon {
-            background: rgba(6, 214, 160, 0.1);
-            color: var(--success-color);
-        }
-
-        .stat-card.absent .stat-icon {
-            background: rgba(239, 71, 111, 0.1);
-            color: var(--danger-color);
-        }
-
-        .stat-card.rate .stat-icon {
-            background: rgba(67, 97, 238, 0.1);
-            color: var(--primary-color);
-        }
-
-        .stat-card.courses .stat-icon {
-            background: rgba(255, 209, 102, 0.1);
-            color: var(--warning-color);
-        }
-
-        .stat-number {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 0.3rem;
-            line-height: 1.2;
-        }
-
-        .stat-card.present .stat-number {
-            color: var(--success-color);
-        }
-
-        .stat-card.absent .stat-number {
-            color: var(--danger-color);
-        }
-
-        .stat-card.rate .stat-number {
-            color: var(--primary-color);
-        }
-
-        .stat-card.courses .stat-number {
-            color: var(--warning-color);
-        }
-
-        .stat-label {
-            color: var(--gray-medium);
-            font-weight: 500;
-            font-size: 0.8rem;
-        }
-
-        .presence-status {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.3rem 0.7rem;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .present {
-            background: rgba(6, 214, 160, 0.12);
-            color: #155724;
-        }
-
-        .pending {
-            background: rgba(255, 209, 102, 0.12);
-            color: #856404;
-        }
-
-        .absent {
-            background: rgba(239, 71, 111, 0.12);
-            color: #721c24;
-        }
-
-        .table {
-            font-size: 0.85rem;
-        }
-
-        .table thead th {
-            font-weight: 600;
-            color: var(--secondary-color);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn {
-            border-radius: 8px;
-            font-weight: 600;
-            padding: 0.6rem 1.2rem;
-            transition: var(--transition);
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-        }
-
-        .btn-sm {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.35);
-        }
-
-        .btn-outline-primary {
-            border: 1.5px solid var(--primary-color);
-            color: var(--primary-color);
-            background: transparent;
-        }
-
-        .btn-outline-primary:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .footer {
-            background: var(--secondary-color);
-            color: white;
-            padding: 1.5rem 0;
-            margin-top: 3rem;
-            font-size: 0.85rem;
-        }
-
-
-
-        @media (max-width: 768px) {
-            .stats-overview {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-
-        }
-
-        @media (max-width: 576px) {
-            .stats-overview {
-                grid-template-columns: 1fr;
-            }
-
-
         }
     </style>
+
 </head>
 
 <body>
 
     <?php include("../NavBar/navbar.php") ?>
     <!-- Main Content -->
-    <div class="main-content" id="mainContent">
-        <div class="content">
-            <div class="page-title">
-                <h2>Tableau de Bord Étudiant</h2>
-                <ul class="breadcrumb">
-                    <li>Accueil</li>
-                    <li>Tableau de Bord</li>
-                </ul>
+    <div class="container py-4" id="mainContent">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Accueil</a></li>
+                        <li class="breadcrumb-item active">Tableau de Bord</li>
+                    </ol>
+                </nav>
+                <h1 class="page-title">Tableau de Bord Étudiant</h1>
             </div>
-
+        </div>
 
             <!-- Cartes de statistiques  -->
             <div class="stats-overview">
@@ -528,7 +241,6 @@ $stats = Presence::getStatsByEtudiant($idEtudiant);
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- Modal pour notification détaillée -->
     <div class="modal fade notification-modal" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">

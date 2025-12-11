@@ -1,4 +1,7 @@
 <?php
+include("../../Model/seance.php");
+include("../../Model/presence.php");
+include("../../Model/utilisateur.php");
 session_start();
 if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
     header("Location: ../Authentification/connexion.php");
@@ -15,6 +18,12 @@ $nom = $_SESSION['nom'] ?? '';
 $prenom = $_SESSION['prenom'] ?? '';
 $email = $_SESSION['email'];
 $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
+$statistiques = seance::getSeancesStatistics();
+$presenceStats = presence::getTodayPresenceStatistics();
+$inscriptions = utilisateur::getInscriptionsEvolution();
+$weeklyPresence = presence::getWeeklyPresenceRate();
+$presenceStats = presence::getTodayPresenceStatistics();
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -23,6 +32,8 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduTrack - Tableau de Bord Administratif</title>
+    <!-- Global Theme -->
+    <link rel="stylesheet" href="../../Css/global-theme.css">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -401,8 +412,6 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
         <div class="content">
-
-
             <!-- Stats Cards - Version améliorée -->
             <div class="row">
                 <div class="col-xl-3 col-md-6">
@@ -414,10 +423,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                         </div>
                         <div class="card-content">
                             <div class="card-title">Présents aujourd'hui</div>
-                            <div class="card-value">198</div>
-                            <div class="card-change positive">
-                                <i class="fas fa-arrow-up me-1"></i> 5.3% depuis hier
-                            </div>
+                            <div class="card-value"><?php echo $presenceStats['present']; ?></div>
                         </div>
                     </div>
                 </div>
@@ -430,10 +436,8 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                         </div>
                         <div class="card-content">
                             <div class="card-title">Absents aujourd'hui</div>
-                            <div class="card-value">27</div>
-                            <div class="card-change negative">
-                                <i class="fas fa-arrow-up me-1"></i> 2.1% depuis hier
-                            </div>
+                            <div class="card-value"><?php echo $presenceStats['absent']; ?></div>
+        
                         </div>
                     </div>
                 </div>
@@ -446,10 +450,8 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                         </div>
                         <div class="card-content">
                             <div class="card-title">Cours actifs</div>
-                            <div class="card-value">15</div>
-                            <div class="card-change positive">
-                                <i class="fas fa-arrow-up me-1"></i> 3 cours cette semaine
-                            </div>
+                            <div class="card-value"><?php echo $statistiques['active']; ?></div>
+                            
                         </div>
                     </div>
                 </div>
@@ -462,10 +464,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                         </div>
                         <div class="card-content">
                             <div class="card-title">Taux de présence</div>
-                            <div class="card-value">88%</div>
-                            <div class="card-change positive">
-                                <i class="fas fa-arrow-up me-1"></i> 2.5% cette semaine
-                            </div>
+                            <div class="card-value"><?php echo $presenceStats['attendanceRate']; ?>%</div>
                         </div>
                     </div>
                 </div>
@@ -473,7 +472,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
             <br><br>
             <!-- Charts Section -->
             <div class="row">
-                <div class="col-xl-8">
+                <div class="col-xl-6">
                     <div class="chart-container">
                         <h3 class="chart-title">Évolution des inscriptions</h3>
                         <div class="chart-wrapper">
@@ -481,17 +480,8 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-4">
-                    <div class="chart-container">
-                        <h3 class="chart-title">Répartition des étudiants</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="studentsDistributionChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
+           
 
-            <div class="row">
                 <div class="col-xl-6">
                     <div class="chart-container">
                         <h3 class="chart-title">Taux de présence par jour (cette semaine)</h3>
@@ -500,22 +490,15 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-6">
-                    <div class="chart-container">
-                        <h3 class="chart-title">Statistiques par département</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="departmentChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
     </div>
     <?php include("../../Footer/footer.php") ?>
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+
+       /* document.addEventListener('DOMContentLoaded', function() {
             // Graphique en courbe pour les utilisateurs
             const usersCtx = document.getElementById('usersChart').getContext('2d');
 
@@ -589,48 +572,7 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                 }
             });
 
-            // Graphique en camembert pour la répartition des étudiants
-            const studentsDistributionCtx = document.getElementById('studentsDistributionChart').getContext('2d');
-            const studentsDistributionChart = new Chart(studentsDistributionCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Informatique', 'Mathématiques', 'Physique', 'Chimie', 'Biologie', 'Autres'],
-                    datasets: [{
-                        data: [35, 25, 15, 10, 8, 7],
-                        backgroundColor: [
-                            '#4361ee',
-                            '#3f37c9',
-                            '#4cc9f0',
-                            '#4895ef',
-                            '#f72585',
-                            '#7209b7'
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 15
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    },
-                    cutout: '70%'
-                }
-            });
+        
 
             // Graphique en courbe pour le taux de présence
             const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
@@ -688,61 +630,107 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
                 }
             });
 
-            // Graphique en barres pour les départements
-            const departmentCtx = document.getElementById('departmentChart').getContext('2d');
-            const departmentChart = new Chart(departmentCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Informatique', 'Mathématiques', 'Physique', 'Chimie', 'Biologie'],
-                    datasets: [{
-                        label: 'Nombre d\'étudiants',
-                        data: [120, 85, 65, 45, 35],
-                        backgroundColor: [
-                            'rgba(67, 97, 238, 0.7)',
-                            'rgba(63, 55, 201, 0.7)',
-                            'rgba(76, 201, 240, 0.7)',
-                            'rgba(72, 149, 239, 0.7)',
-                            'rgba(247, 37, 133, 0.7)'
-                        ],
-                        borderColor: [
-                            '#4361ee',
-                            '#3f37c9',
-                            '#4cc9f0',
-                            '#4895ef',
-                            '#f72585'
-                        ],
-                        borderWidth: 1,
-                        borderRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: "Nombre d'étudiants"
-                            },
-                            grid: {
-                                drawBorder: false
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
+        
+        });*/
+           const inscriptionsData = <?php echo json_encode($inscriptions); ?>;
+    const weeklyPresenceData = <?php echo json_encode($weeklyPresence); ?>;
+    // Graphique dynamique - Évolution des inscriptions
+const usersCtx = document.getElementById('usersChart').getContext('2d');
+
+const enseignantsData = Object.values(inscriptionsData.enseignant);
+const etudiantsData = Object.values(inscriptionsData.etudiant);
+
+const enseignantsGradient = usersCtx.createLinearGradient(0, 0, 0, 400);
+enseignantsGradient.addColorStop(0, 'rgba(126, 87, 194, 0.8)');
+enseignantsGradient.addColorStop(1, 'rgba(126, 87, 194, 0.1)');
+
+const etudiantsGradient = usersCtx.createLinearGradient(0, 0, 0, 400);
+etudiantsGradient.addColorStop(0, 'rgba(255, 152, 0, 0.8)');
+etudiantsGradient.addColorStop(1, 'rgba(255, 152, 0, 0.1)');
+
+new Chart(usersCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+        datasets: [
+            {
+                label: 'Enseignants',
+                data: enseignantsData,
+                borderColor: '#7e57c2',
+                backgroundColor: enseignantsGradient,
+                tension: 0.4,
+                fill: true,
+                borderWidth: 2
+            },
+            {
+                label: 'Étudiants',
+                data: etudiantsData,
+                borderColor: '#ff9800',
+                backgroundColor: etudiantsGradient,
+                tension: 0.4,
+                fill: true,
+                borderWidth: 2
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top' },
+            tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+            y: { beginAtZero: true, title: { display: true, text: "Nombre d'utilisateurs" } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+// Graphique dynamique - Taux de présence par jour
+const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+
+const jours = weeklyPresenceData.jours;
+const taux = weeklyPresenceData.taux;
+
+const attendanceGradient = attendanceCtx.createLinearGradient(0, 0, 0, 400);
+attendanceGradient.addColorStop(0, 'rgba(54, 162, 235, 0.8)');
+attendanceGradient.addColorStop(1, 'rgba(54, 162, 235, 0.1)');
+
+new Chart(attendanceCtx, {
+    type: 'line',
+    data: {
+        labels: jours,
+        datasets: [{
+            label: 'Taux de présence (%)',
+            data: taux,
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: attendanceGradient,
+            tension: 0.4,
+            fill: true,
+            borderWidth: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top' }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                min: 0,
+                max: 100,
+                title: { display: true, text: 'Taux de présence (%)' },
+                ticks: {
+                    callback: value => value + '%'
                 }
-            });
-        });
+            },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
     </script>
 </body>
 

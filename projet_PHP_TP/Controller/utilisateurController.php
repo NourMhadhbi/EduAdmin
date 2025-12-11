@@ -1,15 +1,21 @@
 <?php
 session_start();
 require_once(__DIR__ . "/../Model/utilisateur.php");
+require_once(__DIR__ . "/../Model/enseignant.php");
+require_once(__DIR__ . "/../Model/etudiant.php");
 include_once("configEmail.php");
 class UtilisateurController
 {
-    public function getSessionMatriculeSpecialite()
+    public function getSessionMatriculeSpecialite($idUtilisateur, $role)
     {
-        return [
-            'matricule' => $_SESSION['matricule'] ?? null,
-            'specialite' => $_SESSION['specialite'] ?? null
-        ];
+        if ($role === 'Enseignant') {
+            $enseignant = Enseignant::getById($idUtilisateur); // récupère les infos depuis la DB
+            $_SESSION['matricule'] = $enseignant['matricule'] ?? '';
+            $_SESSION['specialite'] = $enseignant['specialite'] ?? '';
+        } elseif ($role === 'Etudiant') {
+            $etudiant = etudiant::getById($idUtilisateur);
+            $_SESSION['matricule'] = $etudiant['matricule'] ?? '';
+        }
     }
     public function traiterFormulaire()
     {
@@ -76,19 +82,19 @@ class UtilisateurController
                 $_SESSION['nom'] = $nom;
                 $_SESSION['prenom'] = $prenom;
                 $_SESSION['photoProfil'] = $photoProfil;
-                $this->getSessionMatriculeSpecialite($utilisateur["id"], $utilisateur["role"]);
+                $this->getSessionMatriculeSpecialite($result['id'], $role);
                 switch (strtolower($role)) {
                     case 'etudiant':
-                        $redirectURL = "/projet_PHP_TP/Vue/Etudiants/InterfaceAccueil.php";
+                        $redirectURL = "../Vue/Etudiants/InterfaceAccueil.php";
                         break;
                     case 'enseignant':
-                        $redirectURL = "/projet_PHP_TP/Vue/Enseignant/TableaudeBordEnseignant.php";
+                        $redirectURL = "../Vue/Enseignant/TableaudeBordEnseignant.php";
                         break;
                     case 'admin':
-                        $redirectURL = "/projet_PHP_TP/Vue/Administrateur/DashboardAdmin.php";
+                        $redirectURL = "../Vue/Administrateur/DashboardAdmin.php";
                         break;
                     default:
-                        $redirectURL = "/projet_PHP_TP/Vue/dashboard.php";
+                        $redirectURL = "../Vue/Etudiants/InterfaceAccueil.php";
                         break;
                 }
 
@@ -359,6 +365,93 @@ class UtilisateurController
             exit;
         }
     }
+    public function modifierProfil()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_SESSION['id'];
+            $nom = trim($_POST['nom']);
+            $prenom = trim($_POST['prenom']);
+            $email = trim($_POST['email']);
+            $specialite = $_POST['specialite'] ?? null;
+            $photoProfil = null;
+            $uploadDir = __DIR__ . "/../Assets/Images/known";
+            if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
+            if (isset($_FILES["photoProfil"]) && $_FILES["photoProfil"]["error"] === UPLOAD_ERR_OK) {
+                // $fileName = uniqid() . "_" . basename($_FILES["photoProfil"]["name"]);
+                $fileName = basename($_FILES["photoProfil"]["name"]);
+                $targetPath = $uploadDir . "/" . $fileName;
+                if (move_uploaded_file($_FILES["photoProfil"]["tmp_name"], $targetPath)) {
+                    $photoProfil = $fileName;
+                }
+            }
+
+            $result = Utilisateur::modifierProfil($id, $nom, $prenom, $email, $specialite, $photoProfil);
+
+            if (!$result['success']) {
+                $_SESSION['error'] = $result['message'];
+                $_SESSION['old_inputs'] = $_POST;
+                header("Location: ../Vue/Profil/GestionDuProfil.php");
+                exit;
+            }
+
+            if ($result['emailChanged']) {
+                $subject = "Réactivation de votre compte";
+                $message = "Bonjour $prenom, votre email a été modifié. Veuillez confirmer votre compte.";
+                envoyerEmail($email, $subject, $message);
+
+                session_unset();
+                session_destroy();
+
+                session_start();
+                $_SESSION['success'] = 'Email modifié. Vous devez confirmer votre nouveau compte.';
+                header("Location: ../Vue/Profil/GestionDuProfil.php");
+                exit;
+            }
+            $_SESSION['nom'] = $nom;
+            $_SESSION['prenom'] = $prenom;
+            $_SESSION['email'] = $email;
+            if ($photoProfil) {
+                $_SESSION['photoProfil'] = $photoProfil;
+            }
+            if ($_SESSION['role'] === 'enseignant') {
+                $_SESSION['specialite'] = $specialite;
+            }
+
+            $_SESSION['success'] = 'Profil mis à jour avec succès.';
+            header("Location: ../Vue/Profil/GestionDuProfil.php");
+            exit;
+        }
+    }
+    public function changerMotDePasse()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_SESSION['id'];
+            $current = $_POST['currentPassword'] ?? '';
+            $newPassword = $_POST['newPassword'] ?? '';
+            $confirm = $_POST['confirmPassword'] ?? '';
+
+            if ($newPassword !== $confirm) {
+                $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
+                header("Location: ../Vue/Profil/GestionDuProfil.php");
+                exit;
+            }
+            if (!preg_match('/^(?=.*[0-9])(?=.*[\W_]).{8,}$/', $newPassword)) {
+                $_SESSION['error'] = "Le mot de passe doit contenir au moins 8 caractères, un chiffre et un symbole.";
+                header("Location: ../Vue/Profil/GestionDuProfil.php");
+                exit;
+            }
+            $result = Utilisateur::changerMotDePasse($id, $current, $newPassword);
+
+            if ($result['success']) {
+                // $_SESSION['success'] = "Mot de passe modifié avec succès.";
+            } else {
+                $_SESSION['error'] = $result['message'];
+            }
+
+            header("Location: ../Vue/Profil/GestionDuProfil.php");
+            exit;
+        }
+    }
 }
 
 
@@ -374,6 +467,12 @@ switch ($action) {
         break;
     case 'changerStatut':
         $controller->changerStatut();
+        break;
+    case 'modifierProfil':
+        $controller->modifierProfil();
+        break;
+    case 'changerMotDePasse':
+        $controller->changerMotDePasse();
         break;
     case 'send_reset_code':
         $controller->envoyerCodeReset();

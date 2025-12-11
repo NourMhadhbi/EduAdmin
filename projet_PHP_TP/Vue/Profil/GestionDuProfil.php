@@ -1,4 +1,4 @@
-<?php session_start();
+﻿<?php session_start();
 if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
     header("Location: ../Authentification/connexion.php");
 
@@ -8,10 +8,14 @@ $nom = $_SESSION['nom'] ?? '';
 $prenom = $_SESSION['prenom'] ?? '';
 $email = $_SESSION['email'];
 $role = $_SESSION['role'];
-
 $matricule = $_SESSION['matricule'] ?? '';
 $specialite = $_SESSION['specialite'] ?? '';
-$photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
+$photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png';
+
+
+
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -19,40 +23,12 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Profil - Système de Présence Intelligente</title>
+    <link rel="stylesheet" href="../../Css/global-theme.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary-color: #2b2d42;
-            --accent-color: #06d6a0;
-            --accent-dark: #05c391;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --success-color: #06d6a0;
-            --warning-color: #ffd166;
-            --danger-color: #ef476f;
-            --gray-light: #e9ecef;
-            --gray-medium: #adb5bd;
-            --border-radius: 16px;
-            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+        /* Profile-specific styles */
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', 'Inter', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-            color: var(--dark-color);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
 
 
         .user-profile-nav {
@@ -279,6 +255,28 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
             box-shadow: var(--box-shadow);
             overflow: hidden;
         }
+
+        .mb-3 {
+            position: relative;
+        }
+
+        .btn-toggle-password {
+            position: absolute;
+            top: 43px;
+
+            right: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+            z-index: 10;
+        }
+
+        .btn-toggle-password i {
+            pointer-events: none;
+        }
+
 
         .nav-tabs {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -519,7 +517,11 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
             <div class="col-12">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="accueil.html"><i class="fas fa-home me-1"></i>Tableau de bord</a></li>
+                        <li class="breadcrumb-item">
+                            <a href="<?php echo ($role === 'etudiant') ? '../Etudiants/InterfaceAccueil.php' : (($role === 'enseignant') ? '../Enseignant/TableaudeBordEnseignant.php' : '../Administrateur/DashboardAdmin.php'); ?>">
+                                <i class="fas fa-home me-1"></i>Tableau de bord
+                            </a>
+                        </li>
                         <li class="breadcrumb-item active">Mon profil</li>
                     </ol>
                 </nav>
@@ -531,30 +533,34 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
         <div class="row">
             <!-- Colonne de gauche -->
             <div class="col-lg-4">
-                <!-- Photo de profil -->
-                <div class="card profile-section">
-                    <div class="card-header">
-                        <i class="fas fa-id-card"></i> Photo de profil
-                    </div>
-                    <div class="card-body text-center">
-                        <div class="profile-img-container">
-                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Photo de profil" class="profile-img" id="profileImage">
-                            <div class="change-photo-btn" id="changePhotoBtn">
-                                <i class="fas fa-camera"></i>
-                            </div>
-                            <input type="file" id="photoUpload" accept="image/*" style="display: none;">
+                <form method="POST" action="../../Controller/utilisateurController.php" id="profileForm" enctype="multipart/form-data">
+
+                    <!-- Photo de profil -->
+                    <div class="card profile-section">
+                        <div class="card-header">
+                            <i class="fas fa-id-card"></i> Photo de profil
                         </div>
-                        <div class="photo-info">
-                            <p class="mb-3">
-                                Cette photo est utilisée pour la reconnaissance faciale lors du marquage de présence.
-                            </p>
-                            <div class="alert alert-info">
-                                <i class="fas fa-lightbulb me-2"></i>
-                                <strong>Conseil :</strong> Utilisez une photo récente, bien éclairée et avec un fond neutre.
+                        <div class="card-body text-center">
+                            <div class="profile-img-container">
+                                <img src="../../Assets/Images/known/<?= htmlspecialchars($photoProfil) ?>" alt="Photo de profil" class="profile-img" id="profileImage">
+
+                                <div class="change-photo-btn" id="changePhotoBtn">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <input type="file" id="photoUpload" name="photoProfil" accept="image/*" style="display: none;">
+
+                            </div>
+                            <div class="photo-info">
+                                <p class="mb-3">
+                                    Cette photo est utilisée pour la reconnaissance faciale lors du marquage de présence.
+                                </p>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>Conseil :</strong> Utilisez une photo récente, bien éclairée et avec un fond neutre.
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
             </div>
 
@@ -568,108 +574,59 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
                                 <i class="fas fa-user-edit"></i> Informations personnelles
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
-                                <i class="fas fa-lock"></i> Sécurité du compte
-                            </button>
-                        </li>
+
 
                     </ul>
                     <div class="tab-content" id="profileTabsContent">
                         <!-- Onglet Informations personnelles -->
                         <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
                             <h3 class="section-title">Informations personnelles</h3>
-                            <form id="profileForm">
-                                <div class="row mb-2">
-                                    <div class="col-md-6 mb-2">
-                                        <label for="firstName" class="form-label">Prénom</label>
-                                        <input type="text" class="form-control" id="firstName" value="<?= htmlspecialchars($prenom) ?>" required>
-                                    </div>
-                                    <div class="col-md-6 mb-2">
-                                        <label for="lastName" class="form-label">Nom</label>
-                                        <input type="text" class="form-control" id="lastName" value="<?= htmlspecialchars($nom) ?>" required>
-                                    </div>
+
+                            <input type="hidden" name="action" value="modifierProfil">
+                            <div class="row mb-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="firstName" class="form-label">Prénom</label>
+                                    <input type="text" class="form-control" id="firstName" name="prenom" value="<?= htmlspecialchars($prenom) ?>" required>
                                 </div>
-                                <div class="row mb-2">
-                                    <?php if ($role == "Enseignant" || $role == "Etudiant") : ?>
-                                        <div class="col-md-6 mb-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="lastName" class="form-label">Nom</label>
+                                    <input type="text" class="form-control" id="lastName" name="nom" value="<?= htmlspecialchars($nom) ?>" required>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <?php if ($role == "enseignant" || $role == "etudiant") : ?>
+                                    <div class="col-md-6 mb-2">
 
-                                            <label for="studentId" class="form-label">Matricule</label>
-
-                                        </div>
+                                        <label for="studentId" class="form-label">Matricule</label>
                                         <input type="text" class="form-control" id="studentId" value="<?= htmlspecialchars($matricule) ?>" disabled>
-                                    <?php endif; ?>
-                                    <div class="col-md-6 mb-2">
-                                        <label for="email" class="form-label">Adresse email</label>
-                                        <input type="email" class="form-control" id="email" value="<?= htmlspecialchars($email) ?>" required>
-                                    </div>
-                                </div>
-                                <?php if ($role == "Enseignant"): ?>
-                                    <div class="row mb-2">
-
-                                        <div class="col-md-6 mb-2">
-                                            <label for="teacherSp" class="form-label">Spécialité</label>
-                                            <input type="text" class="form-control" id="teacherSp" value="<?= htmlspecialchars($specialite) ?>" disabled>
-                                        </div>
 
                                     </div>
+
                                 <?php endif; ?>
-                                <div class="mt-4">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save me-2"></i> Enregistrer les modifications
-                                    </button>
+                                <div class="col-md-6 mb-2">
+                                    <label for="email" class="form-label">Adresse email</label>
+                                    <input type="email" class="form-control" name="email" id="email" value="<?= htmlspecialchars($email) ?>" required>
                                 </div>
+                            </div>
+                            <?php if ($role == "enseignant"): ?>
+                                <div class="row mb-2">
+
+                                    <div class="col-md-6 mb-2">
+                                        <label for="teacherSp" class="form-label">Spécialité</label>
+                                        <input type="text" class="form-control" name="specialite" id="teacherSp" value="<?= htmlspecialchars($specialite) ?>" disabled>
+                                    </div>
+
+                                </div>
+                            <?php endif; ?>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i> Enregistrer les modifications
+                                </button>
+                            </div>
                             </form>
                         </div>
 
-                        <!-- Onglet Sécurité du compte -->
-                        <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
-                            <h3 class="section-title">Sécurité du compte</h3>
-                            <form id="passwordForm">
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div class="password-container">
-                                            <label for="currentPassword" class="form-label">Mot de passe actuel</label>
-                                            <input type="password" class="form-control" id="currentPassword" required>
-                                            <button type="button" class="password-toggle" id="toggleCurrentPassword">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div class="password-container">
-                                            <label for="newPassword" class="form-label">Nouveau mot de passe</label>
-                                            <input type="password" class="form-control" id="newPassword" required>
-                                            <button type="button" class="password-toggle" id="toggleNewPassword">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                        </div>
-                                        <div class="password-strength strength-weak" id="passwordStrength"></div>
-                                        <div class="password-requirements">
-                                            Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div class="password-container">
-                                            <label for="confirmPassword" class="form-label">Confirmer le nouveau mot de passe</label>
-                                            <input type="password" class="form-control" id="confirmPassword" required>
-                                            <button type="button" class="password-toggle" id="toggleConfirmPassword">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mt-4">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-key me-2"></i> Modifier le mot de passe
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+
 
                     </div>
                 </div>
@@ -681,6 +638,31 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
     <?php include("../../Footer/footer.php") ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        <?php if (!empty($_SESSION['success'])): ?>
+            Swal.fire({
+                icon: 'success',
+                title: 'Succès',
+                text: "<?= addslashes($_SESSION['success']); ?>",
+                confirmButtonColor: '#06d6a0'
+            });
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+
+        <?php if (!empty($_SESSION['error'])): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                html: "<?= addslashes(is_array($_SESSION['error']) ? implode('<br>', $_SESSION['error']) : $_SESSION['error']); ?>",
+                confirmButtonColor: '#ef476f'
+            });
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+    </script>
+
+
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Corrige le blocage du body après fermeture de modal
@@ -717,86 +699,11 @@ $photoProfil = $_SESSION['photoProfil'] ?? 'default_etudiant.png'; ?>
             }
         });
 
-        // Simulation de validation des formulaires
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
 
-            // Animation de succès
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-check me-2"></i> Modifications enregistrées!';
-            submitBtn.classList.remove('btn-primary');
-            submitBtn.classList.add('btn-success');
 
-            setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.classList.remove('btn-success');
-                submitBtn.classList.add('btn-primary');
-            }, 2000);
-        });
 
-        document.getElementById('passwordForm').addEventListener('submit', function(e) {
-            e.preventDefault();
 
-            // Animation de succès
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-check me-2"></i> Mot de passe modifié!';
-            submitBtn.classList.remove('btn-primary');
-            submitBtn.classList.add('btn-success');
 
-            setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.classList.remove('btn-success');
-                submitBtn.classList.add('btn-primary');
-            }, 2000);
-        });
-
-        // Simulation de vérification de force du mot de passe
-        document.getElementById('newPassword').addEventListener('input', function() {
-            const password = this.value;
-            const strengthBar = document.getElementById('passwordStrength');
-
-            if (password.length === 0) {
-                strengthBar.className = 'password-strength';
-                strengthBar.style.width = '0%';
-            } else if (password.length < 6) {
-                strengthBar.className = 'password-strength strength-weak';
-                strengthBar.style.width = '25%';
-            } else if (password.length < 10) {
-                strengthBar.className = 'password-strength strength-medium';
-                strengthBar.style.width = '50%';
-            } else {
-                strengthBar.className = 'password-strength strength-strong';
-                strengthBar.style.width = '100%';
-            }
-        });
-
-        // Fonctionnalité d'affichage/masquage du mot de passe
-        function setupPasswordToggle(toggleId, inputId) {
-            const toggleBtn = document.getElementById(toggleId);
-            const passwordInput = document.getElementById(inputId);
-
-            toggleBtn.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-
-                // Changer l'icône
-                const icon = this.querySelector('i');
-                if (type === 'text') {
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
-            });
-        }
-
-        // Initialiser les boutons d'affichage du mot de passe
-        setupPasswordToggle('toggleCurrentPassword', 'currentPassword');
-        setupPasswordToggle('toggleNewPassword', 'newPassword');
-        setupPasswordToggle('toggleConfirmPassword', 'confirmPassword');
     </script>
 </body>
 
